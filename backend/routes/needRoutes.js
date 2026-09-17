@@ -6,12 +6,26 @@ import {
   updateNeed,
   deleteNeed,
 } from "../repositories/needRepository.js";
+import { geocodeLocation } from "../services/geocodingService.js";
 
 const router = express.Router();
 
 router.post("/", async (req, res) => {
   try {
-    const need = await createNeed(req.body);
+    const fromLocation = await geocodeLocation(req.body.from);
+    const toLocation = await geocodeLocation(req.body.to);
+
+    const needData = {
+      ...req.body,
+
+      fromLat: fromLocation.lat,
+      fromLng: fromLocation.lng,
+
+      toLat: toLocation.lat,
+      toLng: toLocation.lng,
+    };
+
+    const need = await createNeed(needData);
 
     res.status(201).json(need);
   } catch (error) {
@@ -75,13 +89,13 @@ router.delete("/:id", async (req, res) => {
 
     res.status(200).json({
       message: "Need deleted successfully",
-      result
+      result,
     });
   } catch (error) {
     console.error("Error deleting need:", error.message);
 
     res.status(500).json({
-      message: "Could not delete need"
+      message: "Could not delete need",
     });
   }
 });

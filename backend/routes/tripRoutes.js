@@ -8,6 +8,7 @@ import {
 } from "../repositories/tripRepository.js";
 import formidable from "formidable";
 import path from "path";
+import { geocodeLocation } from "../services/geocodingService.js";
 
 const router = express.Router();
 
@@ -16,10 +17,12 @@ router.post("/", async (req, res) => {
     const form = formidable({
       multiples: true,
       uploadDir: path.join(process.cwd(), "uploads"),
-      keepExtensions: true
+      keepExtensions: true,
     });
 
     const [fields, files] = await form.parse(req);
+    const fromLocation = await geocodeLocation(fields.from?.[0] || "");
+    const toLocation = await geocodeLocation(fields.to?.[0] || "");
 
     const carImages = (files.carImages || []).map((file) => {
       return `/uploads/${file.newFilename}`;
@@ -29,13 +32,17 @@ router.post("/", async (req, res) => {
       ownerId: fields.ownerId?.[0] || "",
       ownerName: fields.ownerName?.[0] || "",
       from: fields.from?.[0] || "",
+      fromLat: fromLocation.lat,
+      fromLng: fromLocation.lng,
       to: fields.to?.[0] || "",
+      toLat: toLocation.lat,
+      toLng: toLocation.lng,
       date: fields.date?.[0] || "",
       carType: fields.carType?.[0] || "",
       availableSeats: Number(fields.availableSeats?.[0] || 0),
       availableBoxes: Number(fields.availableBoxes?.[0] || 0),
       description: fields.description?.[0] || "",
-      carImages
+      carImages,
     };
 
     const trip = await createTrip(tripData);
@@ -45,7 +52,7 @@ router.post("/", async (req, res) => {
     console.error("Error creating trip:", error);
 
     res.status(500).json({
-      message: "Could not create trip"
+      message: "Could not create trip",
     });
   }
 });

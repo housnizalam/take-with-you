@@ -5,23 +5,49 @@ import requestRoutes from "./routes/needRoutes.js";
 import needRoutes from "./routes/needRoutes.js";
 import cors from "cors";
 import path from "path";
+import { geocodeLocation } from "./services/geocodingService.js";
+import { calculateDistanceKm } from "./services/distanceService.js";
 
 const app = express();
-app.use(cors({
-  origin: "http://localhost:5173"
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  }),
+);
 const PORT = 3000;
 
 app.use(express.json());
 
-app.use(
-  "/uploads",
-  express.static(path.join(process.cwd(), "uploads"))
-);
+app.get("/api/test-geocode", async (req, res) => {
+  try {
+    const location = await geocodeLocation("Kassel");
+
+    res.json(location);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+});
+
+app.get("/api/test-distance", (req, res) => {
+  const distance = calculateDistanceKm(
+    51.3157833,
+    9.4978479,
+    51.3600,
+    9.4700
+  );
+
+  res.json({
+    distanceKm: distance
+  });
+});
+
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.get("/api", (req, res) => {
   res.json({
-    message: "Take With You API is running"
+    message: "Take With You API is running",
   });
 });
 
