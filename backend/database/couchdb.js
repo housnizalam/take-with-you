@@ -26,4 +26,16 @@ async function getDatabase() {
   return couch.db.use(databaseName);
 }
 
-export { getDatabase };
+async function createIndexes() {
+  const db = await getDatabase();
+
+  await db.createIndex({
+    index: {
+      fields: ["type", "date"]
+    },
+    name: "trip-date-index",
+    type: "json"
+  });
+}
+
+export { getDatabase, createIndexes };
