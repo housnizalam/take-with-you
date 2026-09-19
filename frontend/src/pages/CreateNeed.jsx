@@ -1,5 +1,7 @@
 import { useState } from "react";
 import apiConfig from "../config/apiConfig.js";
+import { Link } from "react-router-dom";
+import LoadingButton from "../components/LoadingButton.jsx";
 
 function getTodayDate() {
   const today = new Date();
@@ -17,6 +19,8 @@ function CreateNeed() {
 
   const [matches, setMatches] = useState([]);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [formData, setFormData] = useState({
     ownerId: "",
     ownerName: "",
@@ -27,7 +31,7 @@ function CreateNeed() {
     fromRadiusKm: 0,
     requiredSeats: 0,
     requiredBoxes: 0,
-    description: ""
+    description: "",
   });
 
   function handleChange(event) {
@@ -35,23 +39,27 @@ function CreateNeed() {
 
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
 
+    if (isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
     if (!needsSeat && !needsBoxes) {
       alert("Please select passenger, package, or both.");
       return;
     }
 
-    const dateFrom =
-      formData.dateFrom || getTodayDate();
+    const dateFrom = formData.dateFrom || getTodayDate();
 
-    const dateTo =
-      formData.dateTo || dateFrom;
+    const dateTo = formData.dateTo || dateFrom;
 
     if (dateFrom > dateTo) {
       alert("Date From cannot be after Date To.");
@@ -66,27 +74,20 @@ function CreateNeed() {
 
       fromRadiusKm: Number(formData.fromRadiusKm),
 
-      requiredSeats: needsSeat
-        ? Number(formData.requiredSeats)
-        : 0,
+      requiredSeats: needsSeat ? Number(formData.requiredSeats) : 0,
 
-      requiredBoxes: needsBoxes
-        ? Number(formData.requiredBoxes)
-        : 0
+      requiredBoxes: needsBoxes ? Number(formData.requiredBoxes) : 0,
     };
 
     try {
       // 1. Create the Need
-      const response = await fetch(
-        `${apiConfig.baseUrl}/api/needs`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(needData)
-        }
-      );
+      const response = await fetch(`${apiConfig.baseUrl}/api/needs`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(needData),
+      });
 
       const createdNeed = await response.json();
 
@@ -94,19 +95,17 @@ function CreateNeed() {
 
       // 2. Find matching trips for this Need
       const matchesResponse = await fetch(
-        `${apiConfig.baseUrl}/api/matches/need/${createdNeed._id}`
+        `${apiConfig.baseUrl}/api/matches/need/${createdNeed._id}`,
       );
 
-      const matchesData =
-        await matchesResponse.json();
+      const matchesData = await matchesResponse.json();
 
       // 3. Save matches in React state
       setMatches(matchesData);
     } catch (error) {
-      console.error(
-        "Error creating need or loading matches:",
-        error
-      );
+      console.error("Error creating need or loading matches:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -138,9 +137,7 @@ function CreateNeed() {
         </div>
 
         <div>
-          <label>
-            Search Radius from Start Location (km):
-          </label>
+          <label>Search Radius from Start Location (km):</label>
 
           <input
             type="number"
@@ -191,11 +188,8 @@ function CreateNeed() {
             <input
               type="checkbox"
               checked={needsSeat}
-              onChange={(event) =>
-                setNeedsSeat(event.target.checked)
-              }
+              onChange={(event) => setNeedsSeat(event.target.checked)}
             />
-
             I need a seat
           </label>
         </div>
@@ -219,11 +213,8 @@ function CreateNeed() {
             <input
               type="checkbox"
               checked={needsBoxes}
-              onChange={(event) =>
-                setNeedsBoxes(event.target.checked)
-              }
+              onChange={(event) => setNeedsBoxes(event.target.checked)}
             />
-
             I want to transport packages
           </label>
         </div>
@@ -252,34 +243,32 @@ function CreateNeed() {
           />
         </div>
 
-        <button type="submit">
+        <LoadingButton
+          type="submit"
+          loading={isSubmitting}
+          loadingText="Finding Trips..."
+        >
           Find Transport
-        </button>
+        </LoadingButton>
       </form>
 
       <hr />
 
-<section>
-  <h2>Matching Trips</h2>
+      <section>
+        <h2>Matching Trips</h2>
 
-  {matches.length === 0 ? (
-    <p>No matching trips found.</p>
-  ) : (
-    matches.map((trip) => (
-      <div key={trip._id}>
-        <span>
-          {trip.from} → {trip.to}
-        </span>
-
-        {" | "}
-
-        <span>
-          {trip.date}
-        </span>
-      </div>
-    ))
-  )}
-</section>
+        {matches.length === 0 ? (
+          <p>No matching trips found.</p>
+        ) : (
+          matches.map((trip) => (
+            <div key={trip._id}>
+              <Link to={`/trips/${trip._id}`}>
+                {trip.from} → {trip.to} | {trip.date}
+              </Link>
+            </div>
+          ))
+        )}
+      </section>
     </div>
   );
 }

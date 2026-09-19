@@ -91,11 +91,40 @@ router.get("/:id", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   try {
-    const updatedTrip = await updateTrip(req.params.id, req.body);
+    const currentTrip = await getTripById(req.params.id);
+
+    const updatedData = {
+      ...req.body,
+    };
+
+    if (
+      req.body.from &&
+      req.body.from !== currentTrip.from
+    ) {
+      const fromLocation = await geocodeLocation(req.body.from);
+
+      updatedData.fromLat = fromLocation.lat;
+      updatedData.fromLng = fromLocation.lng;
+    }
+
+    if (
+      req.body.to &&
+      req.body.to !== currentTrip.to
+    ) {
+      const toLocation = await geocodeLocation(req.body.to);
+
+      updatedData.toLat = toLocation.lat;
+      updatedData.toLng = toLocation.lng;
+    }
+
+    const updatedTrip = await updateTrip(
+      req.params.id,
+      updatedData,
+    );
 
     res.status(200).json(updatedTrip);
   } catch (error) {
-    console.error("Error updating trip:", error.message);
+    console.error("Error updating trip:", error);
 
     res.status(500).json({
       message: "Could not update trip",

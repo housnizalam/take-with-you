@@ -3,6 +3,7 @@ import Home from "./pages/Home.jsx";
 import Trips from "./pages/Trips.jsx";
 import CreateTrip from "./pages/CreateTrip.jsx";
 import CreateNeed from "./pages/CreateNeed.jsx";
+import TripDetails from "./pages/TripDetails.jsx";
 
 function App() {
   return (
@@ -10,7 +11,7 @@ function App() {
       <nav>
         <Link to="/">Home</Link>
         {" | "}
-        <Link to="/trips">Trips</Link>
+        <Link to="/trips">My trips</Link>
         {" | "}
         <Link to="/trips/new">Create Trip</Link>
         {" | "}
@@ -22,6 +23,7 @@ function App() {
         <Route path="/trips" element={<Trips />} />
         <Route path="/trips/new" element={<CreateTrip />} />
         <Route path="/needs/new" element={<CreateNeed />} />
+        <Route path="/trips/:id" element={<TripDetails />} />
       </Routes>
     </div>
   );

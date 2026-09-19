@@ -1,10 +1,10 @@
 import { useState } from "react";
 import apiConfig from "../config/apiConfig.js";
+import { getCurrentUser } from "../auth/currentUser.js";
+import LoadingButton from "../components/LoadingButton.jsx";
 
 function CreateTrip() {
   const [formData, setFormData] = useState({
-    ownerId: "",
-    ownerName: "",
     from: "",
     to: "",
     date: "",
@@ -16,6 +16,10 @@ function CreateTrip() {
 
   const [carImages, setCarImages] = useState([]);
 
+  const currentUser = getCurrentUser();
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   function handleChange(event) {
     const { name, value } = event.target;
 
@@ -25,48 +29,48 @@ function CreateTrip() {
     });
   }
 
-async function handleSubmit(event) {
-  event.preventDefault();
+  async function handleSubmit(event) {
+    event.preventDefault();
 
-  const multipartData = new FormData();
+    if (isSubmitting) {
+      return;
+    }
 
-  Object.entries(formData).forEach(([key, value]) => {
-    multipartData.append(key, value);
-  });
+    setIsSubmitting(true);
 
-  carImages.forEach((file) => {
-    multipartData.append("carImages", file);
-  });
+    const multipartData = new FormData();
+    multipartData.append("ownerId", currentUser.id);
+    multipartData.append("ownerName", currentUser.name);
 
-  try {
-    const response = await fetch(`${apiConfig.baseUrl}/api/trips`, {
-      method: "POST",
-      body: multipartData,
+    Object.entries(formData).forEach(([key, value]) => {
+      multipartData.append(key, value);
     });
 
-    const result = await response.json();
+    carImages.forEach((file) => {
+      multipartData.append("carImages", file);
+    });
 
-    console.log("Trip created:", result);
-  } catch (error) {
-    console.error("Error creating trip:", error);
+    try {
+      const response = await fetch(`${apiConfig.baseUrl}/api/trips`, {
+        method: "POST",
+        body: multipartData,
+      });
+
+      const result = await response.json();
+
+      console.log("Trip created:", result);
+    } catch (error) {
+      console.error("Error creating trip:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
-}
 
   return (
     <div>
       <h1>Create Trip</h1>
 
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name:</label>
-          <input
-            type="text"
-            name="ownerName"
-            value={formData.ownerName}
-            onChange={handleChange}
-          />
-        </div>
-
         <div>
           <label>From:</label>
           <input
@@ -148,7 +152,13 @@ async function handleSubmit(event) {
           />
         </div>
 
-        <button type="submit">Create Trip</button>
+        <LoadingButton
+          type="submit"
+          loading={isSubmitting}
+          loadingText="Creating Trip..."
+        >
+          Create Trip
+        </LoadingButton>
       </form>
     </div>
   );
