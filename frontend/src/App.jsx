@@ -5,10 +5,12 @@ import CreateTrip from "./pages/CreateTrip.jsx";
 import CreateNeed from "./pages/CreateNeed.jsx";
 import TripDetails from "./pages/TripDetails.jsx";
 import Needs from "./pages/Needs.jsx";
+import UserSwitcher from "./components/UserSwitcher.jsx";
 
 function App() {
   return (
     <div>
+      <UserSwitcher />
       <nav>
         <Link to="/">Home</Link>
         {" | "}

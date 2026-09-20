@@ -34,7 +34,22 @@ async function getMessagesByConversationId(conversationId) {
   );
 }
 
+async function getMessagesByTripId(tripId) {
+  const db = await getDatabase();
+
+  const result = await db.find({
+    selector: {
+      type: "message",
+      tripId,
+    },
+    limit: 1000,
+  });
+
+  return result.docs;
+}
+
 export {
   createMessage,
   getMessagesByConversationId,
+  getMessagesByTripId,
 };

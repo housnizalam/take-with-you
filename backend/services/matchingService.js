@@ -4,7 +4,7 @@ const MAX_DESTINATION_DISTANCE_KM = 50;
 
 function isTripMatch(trip, need) {
   const isDateMatch = trip.date >= need.dateFrom && trip.date <= need.dateTo;
-
+  const isDifferentOwner = trip.ownerId !== need.ownerId;
   const distanceKm = calculateDistanceKm(
     need.fromLat,
     need.fromLng,
@@ -18,7 +18,13 @@ function isTripMatch(trip, need) {
 
   const hasEnoughBoxes = trip.availableBoxes >= need.requiredBoxes;
 
-  return isDateMatch && isLocationMatch && hasEnoughSeats && hasEnoughBoxes;
+  return (
+    isDateMatch &&
+    isLocationMatch &&
+    hasEnoughSeats &&
+    hasEnoughBoxes &&
+    isDifferentOwner
+  );
 }
 
 function findMatchingTrips(trips, need) {
@@ -30,26 +36,18 @@ function findMatchingTrips(trips, need) {
         need.toLat,
         need.toLng,
         trip.toLat,
-        trip.toLng
+        trip.toLng,
       );
 
       return {
         ...trip,
-        destinationDistanceKm
+        destinationDistanceKm,
       };
     })
 
-    .filter(
-      (trip) =>
-        trip.destinationDistanceKm <=
-        MAX_DESTINATION_DISTANCE_KM
-    )
+    .filter((trip) => trip.destinationDistanceKm <= MAX_DESTINATION_DISTANCE_KM)
 
-    .sort(
-      (a, b) =>
-        a.destinationDistanceKm -
-        b.destinationDistanceKm
-    );
+    .sort((a, b) => a.destinationDistanceKm - b.destinationDistanceKm);
 }
 
 export { isTripMatch, findMatchingTrips };

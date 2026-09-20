@@ -4,6 +4,12 @@ import { getCurrentUser } from "../auth/currentUser.js";
 import { isTripOwner } from "../auth/permissions.js";
 import { useNavigate, useParams } from "react-router-dom";
 import LoadingButton from "../components/LoadingButton.jsx";
+import ChatBox from "../components/ChatBox.jsx";
+import { createConversationId } from "../services/conversationService.js";
+import {
+  connectChatSocket,
+  disconnectChatSocket,
+} from "../services/chatSocketService.js";
 
 function TripDetails() {
   const { id } = useParams();
@@ -13,6 +19,10 @@ function TripDetails() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const [conversations, setConversations] = useState([]);
+
+  const [liveMessage, setLiveMessage] = useState(null);
 
   const [editData, setEditData] = useState({
     from: "",
@@ -53,6 +63,19 @@ function TripDetails() {
 
     loadTrip();
   }, [id]);
+
+  useEffect(() => {
+  connectChatSocket(
+    currentUser.id,
+    (message) => {
+      setLiveMessage(message);
+    },
+  );
+
+  return () => {
+    disconnectChatSocket();
+  };
+}, [currentUser.id]);
 
   function handleEditChange(event) {
     const { name, value } = event.target;
@@ -154,11 +177,52 @@ function TripDetails() {
     }
   }
 
+    useEffect(() => {
+    async function loadConversations() {
+      if (!trip) {
+        return;
+      }
+
+      if (trip.ownerId !== currentUser.id) {
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${apiConfig.baseUrl}/api/messages/trip/${trip._id}/user/${currentUser.id}/conversations`,
+        );
+
+        if (!response.ok) {
+          throw new Error("Could not load conversations");
+        }
+
+        const data = await response.json();
+
+        setConversations(data);
+      } catch (error) {
+        console.error("Error loading conversations:", error);
+      }
+    }
+
+    loadConversations();
+  }, [trip, currentUser.id]);
+
   if (!trip) {
     return <p>Loading trip...</p>;
   }
 
   const isOwner = isTripOwner(trip, currentUser);
+
+
+  let clientConversationId = null;
+
+  if (!isOwner) {
+    clientConversationId = createConversationId(
+      trip._id,
+      currentUser.id,
+      trip.ownerId,
+    );
+  }
 
   return (
     <div>
@@ -285,9 +349,36 @@ function TripDetails() {
           <hr />
 
           <section>
-            <h2>Contact Driver</h2>
+            <h2>Messages</h2>
 
-            <p>Messenger will be added later.</p>
+            {!isOwner ? (
+              <ChatBox
+                tripId={trip._id}
+                conversationId={clientConversationId}
+                currentUser={currentUser}
+                otherUser={{
+                  id: trip.ownerId,
+                  name: trip.ownerName,
+                }}
+                 liveMessage={liveMessage}
+              />
+            ) : conversations.length === 0 ? (
+              <p>No messages for this trip yet.</p>
+            ) : (
+              conversations.map((conversation) => (
+                <ChatBox
+                  key={conversation.conversationId}
+                  tripId={trip._id}
+                  conversationId={conversation.conversationId}
+                  currentUser={currentUser}
+                  otherUser={{
+                    id: conversation.otherUserId,
+                    name: conversation.otherUserName,
+                  }}
+                  liveMessage={liveMessage}
+                />
+              ))
+            )}
           </section>
 
           {isOwner && (

@@ -1,13 +1,14 @@
-
 let socket = null;
 
 function connectChatSocket(userId, onMessage) {
-  socket = new WebSocket("ws://localhost:3000");
+  const newSocket = new WebSocket("ws://localhost:3000");
 
-  socket.addEventListener("open", () => {
+  socket = newSocket;
+
+  newSocket.addEventListener("open", () => {
     console.log("WebSocket connected");
 
-    socket.send(
+    newSocket.send(
       JSON.stringify({
         type: "register",
         userId,
@@ -15,7 +16,7 @@ function connectChatSocket(userId, onMessage) {
     );
   });
 
-  socket.addEventListener("message", (event) => {
+  newSocket.addEventListener("message", (event) => {
     try {
       const data = JSON.parse(event.data);
 
@@ -30,21 +31,27 @@ function connectChatSocket(userId, onMessage) {
     }
   });
 
-  socket.addEventListener("close", () => {
+  newSocket.addEventListener("close", () => {
     console.log("WebSocket disconnected");
+
+    if (socket === newSocket) {
+      socket = null;
+    }
   });
 
-  socket.addEventListener("error", (error) => {
+  newSocket.addEventListener("error", (error) => {
     console.error("WebSocket error:", error);
   });
 }
 
 function sendChatMessage(toUserId, message) {
   if (!socket) {
+    console.log("No WebSocket connection");
     return;
   }
 
   if (socket.readyState !== WebSocket.OPEN) {
+    console.log("WebSocket is not ready");
     return;
   }
 
@@ -58,9 +65,27 @@ function sendChatMessage(toUserId, message) {
 }
 
 function disconnectChatSocket() {
-  if (socket) {
-    socket.close();
-    socket = null;
+  if (!socket) {
+    return;
+  }
+
+  const socketToClose = socket;
+
+  socket = null;
+
+  if (socketToClose.readyState === WebSocket.OPEN) {
+    socketToClose.close();
+    return;
+  }
+
+  if (socketToClose.readyState === WebSocket.CONNECTING) {
+    socketToClose.addEventListener(
+      "open",
+      () => {
+        socketToClose.close();
+      },
+      { once: true },
+    );
   }
 }
 

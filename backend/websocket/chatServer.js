@@ -1,5 +1,4 @@
-import { WebSocketServer } from "ws";
-
+import { WebSocket, WebSocketServer } from "ws";
 const connectedUsers = new Map();
 
 function initializeChatServer(server) {
@@ -15,29 +14,23 @@ function initializeChatServer(server) {
         const data = JSON.parse(rawMessage.toString());
 
         if (data.type === "register") {
-          connectedUsers.set(
-            data.userId,
-            socket,
-          );
+          connectedUsers.set(data.userId, socket);
 
           socket.userId = data.userId;
 
-          console.log(
-            `WebSocket user registered: ${data.userId}`,
-          );
+          console.log(`WebSocket user registered: ${data.userId}`);
+
+          console.log("Connected users:", [...connectedUsers.keys()]);
 
           return;
         }
 
         if (data.type === "message") {
-          const receiverSocket =
-            connectedUsers.get(data.toUserId);
+          const receiverSocket = connectedUsers.get(data.toUserId);
+          console.log(`Sending live message to: ${data.toUserId}`);
 
-          if (
-            receiverSocket &&
-            receiverSocket.readyState ===
-              receiverSocket.OPEN
-          ) {
+          console.log("Connected users:", [...connectedUsers.keys()]);
+          if (receiverSocket && receiverSocket.readyState === WebSocket.OPEN) {
             receiverSocket.send(
               JSON.stringify({
                 type: "message",
@@ -49,22 +42,21 @@ function initializeChatServer(server) {
           return;
         }
       } catch (error) {
-        console.error(
-          "WebSocket message error:",
-          error,
-        );
+        console.error("WebSocket message error:", error);
       }
     });
 
     socket.on("close", () => {
-      if (socket.userId) {
-        connectedUsers.delete(
-          socket.userId,
-        );
+      if (!socket.userId) {
+        return;
+      }
 
-        console.log(
-          `WebSocket user disconnected: ${socket.userId}`,
-        );
+      const registeredSocket = connectedUsers.get(socket.userId);
+
+      if (registeredSocket === socket) {
+        connectedUsers.delete(socket.userId);
+
+        console.log(`WebSocket user disconnected: ${socket.userId}`);
       }
     });
   });
