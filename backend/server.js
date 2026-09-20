@@ -1,11 +1,12 @@
 import express from "express";
-import { getDatabase, createIndexes} from "./database/couchdb.js";
+import { getDatabase, createIndexes } from "./database/couchdb.js";
 import tripRoutes from "./routes/tripRoutes.js";
 import requestRoutes from "./routes/needRoutes.js";
 import needRoutes from "./routes/needRoutes.js";
 import cors from "cors";
 import path from "path";
 import matchRoutes from "./routes/matchRoutes.js";
+import { cleanupExpiredData } from "./services/cleanupService.js";
 
 const app = express();
 app.use(
@@ -34,10 +35,18 @@ async function startServer() {
   try {
     await getDatabase();
     await createIndexes();
+    await cleanupExpiredData();
 
     app.listen(PORT, () => {
       console.log(`Server is running on http://localhost:${PORT}`);
     });
+
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+
+    setInterval(() => {
+      cleanupExpiredData();
+    }, TWENTY_FOUR_HOURS);
+    
   } catch (error) {
     console.error("Could not connect to CouchDB:");
     console.error(error.message);

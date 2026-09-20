@@ -2,6 +2,7 @@ import { useState } from "react";
 import apiConfig from "../config/apiConfig.js";
 import { Link } from "react-router-dom";
 import LoadingButton from "../components/LoadingButton.jsx";
+import { getCurrentUser } from "../auth/currentUser.js";
 
 function getTodayDate() {
   const today = new Date();
@@ -21,9 +22,9 @@ function CreateNeed() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const currentUser = getCurrentUser();
+
   const [formData, setFormData] = useState({
-    ownerId: "",
-    ownerName: "",
     from: "",
     to: "",
     dateFrom: "",
@@ -68,6 +69,9 @@ function CreateNeed() {
 
     const needData = {
       ...formData,
+
+      ownerId: currentUser.id,
+      ownerName: currentUser.name,
 
       dateFrom,
       dateTo,
@@ -114,17 +118,6 @@ function CreateNeed() {
       <h1>Find Transport</h1>
 
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name:</label>
-
-          <input
-            type="text"
-            name="ownerName"
-            value={formData.ownerName}
-            onChange={handleChange}
-          />
-        </div>
-
         <div>
           <label>From:</label>
 

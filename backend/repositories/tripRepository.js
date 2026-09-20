@@ -25,6 +25,7 @@ async function getAllTrips() {
     selector: {
       type: "trip",
     },
+    limit: 1000,
   });
 
   return result.docs;
@@ -87,6 +88,26 @@ async function getTripsByDateRange(dateFrom, dateTo) {
   return result.docs;
 }
 
+async function deleteExpiredTrips(cutoffDate) {
+  const db = await getDatabase();
+
+  const result = await db.find({
+    selector: {
+      type: "trip",
+      date: {
+        $lte: cutoffDate,
+      },
+    },
+    limit: 1000,
+  });
+
+  for (const trip of result.docs) {
+    await db.destroy(trip._id, trip._rev);
+  }
+
+  return result.docs.length;
+}
+
 export {
   createTrip,
   getAllTrips,
@@ -94,4 +115,5 @@ export {
   updateTrip,
   deleteTrip,
   getTripsByDateRange,
+  deleteExpiredTrips,
 };

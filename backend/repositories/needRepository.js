@@ -6,7 +6,7 @@ async function createNeed(needData) {
   const need = {
     type: "need",
     ...needData,
-    createdAt: Date.now()
+    createdAt: Date.now(),
   };
 
   const result = await db.insert(need);
@@ -14,7 +14,7 @@ async function createNeed(needData) {
   return {
     ...need,
     _id: result.id,
-    _rev: result.rev
+    _rev: result.rev,
   };
 }
 
@@ -23,8 +23,9 @@ async function getAllNeeds() {
 
   const result = await db.find({
     selector: {
-      type: "need"
-    }
+      type: "need",
+    },
+    limit: 1000,
   });
 
   return result.docs;
@@ -48,14 +49,14 @@ async function updateNeed(id, needData) {
     ...needData,
     _id: existingNeed._id,
     _rev: existingNeed._rev,
-    type: "need"
+    type: "need",
   };
 
   const result = await db.insert(updatedNeed);
 
   return {
     ...updatedNeed,
-    _rev: result.rev
+    _rev: result.rev,
   };
 }
 
@@ -64,12 +65,29 @@ async function deleteNeed(id) {
 
   const existingNeed = await db.get(id);
 
-  const result = await db.destroy(
-    existingNeed._id,
-    existingNeed._rev
-  );
+  const result = await db.destroy(existingNeed._id, existingNeed._rev);
 
   return result;
+}
+
+async function deleteExpiredNeeds(cutoffDate) {
+  const db = await getDatabase();
+
+  const result = await db.find({
+    selector: {
+      type: "need",
+      dateTo: {
+        $lte: cutoffDate,
+      },
+    },
+    limit: 1000,
+  });
+
+  for (const need of result.docs) {
+    await db.destroy(need._id, need._rev);
+  }
+
+  return result.docs.length;
 }
 
 export {
@@ -77,5 +95,6 @@ export {
   getAllNeeds,
   getNeedById,
   updateNeed,
-  deleteNeed
+  deleteNeed,
+  deleteExpiredNeeds,
 };
