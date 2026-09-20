@@ -48,8 +48,30 @@ async function getMessagesByTripId(tripId) {
   return result.docs;
 }
 
+async function deleteMessagesByTripId(tripId) {
+  const db = await getDatabase();
+
+  const result = await db.find({
+    selector: {
+      type: "message",
+      tripId,
+    },
+    limit: 1000,
+  });
+
+  for (const message of result.docs) {
+    await db.destroy(
+      message._id,
+      message._rev,
+    );
+  }
+
+  return result.docs.length;
+}
+
 export {
   createMessage,
   getMessagesByConversationId,
   getMessagesByTripId,
+  deleteMessagesByTripId,
 };

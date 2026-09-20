@@ -9,6 +9,7 @@ import {
 import formidable from "formidable";
 import path from "path";
 import { geocodeLocation } from "../services/geocodingService.js";
+import { deleteMessagesByTripId } from "../repositories/messageRepository.js";
 
 const router = express.Router();
 
@@ -97,30 +98,21 @@ router.put("/:id", async (req, res) => {
       ...req.body,
     };
 
-    if (
-      req.body.from &&
-      req.body.from !== currentTrip.from
-    ) {
+    if (req.body.from && req.body.from !== currentTrip.from) {
       const fromLocation = await geocodeLocation(req.body.from);
 
       updatedData.fromLat = fromLocation.lat;
       updatedData.fromLng = fromLocation.lng;
     }
 
-    if (
-      req.body.to &&
-      req.body.to !== currentTrip.to
-    ) {
+    if (req.body.to && req.body.to !== currentTrip.to) {
       const toLocation = await geocodeLocation(req.body.to);
 
       updatedData.toLat = toLocation.lat;
       updatedData.toLng = toLocation.lng;
     }
 
-    const updatedTrip = await updateTrip(
-      req.params.id,
-      updatedData,
-    );
+    const updatedTrip = await updateTrip(req.params.id, updatedData);
 
     res.status(200).json(updatedTrip);
   } catch (error) {
@@ -134,14 +126,21 @@ router.put("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    const result = await deleteTrip(req.params.id);
+    const tripId = req.params.id;
+
+    await deleteMessagesByTripId(tripId);
+
+    const result = await deleteTrip(tripId);
 
     res.status(200).json({
       message: "Trip deleted successfully",
       result,
     });
   } catch (error) {
-    console.error("Error deleting trip:", error.message);
+    console.error(
+      "Error deleting trip:",
+      error.message,
+    );
 
     res.status(500).json({
       message: "Could not delete trip",

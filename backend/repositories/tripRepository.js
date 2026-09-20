@@ -101,11 +101,15 @@ async function deleteExpiredTrips(cutoffDate) {
     limit: 1000,
   });
 
+  const deletedTripIds = [];
+
   for (const trip of result.docs) {
     await db.destroy(trip._id, trip._rev);
+
+    deletedTripIds.push(trip._id);
   }
 
-  return result.docs.length;
+  return deletedTripIds;
 }
 
 export {

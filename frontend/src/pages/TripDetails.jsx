@@ -177,35 +177,59 @@ function TripDetails() {
     }
   }
 
-    useEffect(() => {
-    async function loadConversations() {
-      if (!trip) {
-        return;
-      }
+  async function loadConversations() {
+  if (!trip) {
+    return;
+  }
 
-      if (trip.ownerId !== currentUser.id) {
-        return;
-      }
+  if (trip.ownerId !== currentUser.id) {
+    return;
+  }
 
-      try {
-        const response = await fetch(
-          `${apiConfig.baseUrl}/api/messages/trip/${trip._id}/user/${currentUser.id}/conversations`,
-        );
+  try {
+    const response = await fetch(
+      `${apiConfig.baseUrl}/api/messages/trip/${trip._id}/user/${currentUser.id}/conversations`,
+    );
 
-        if (!response.ok) {
-          throw new Error("Could not load conversations");
-        }
-
-        const data = await response.json();
-
-        setConversations(data);
-      } catch (error) {
-        console.error("Error loading conversations:", error);
-      }
+    if (!response.ok) {
+      throw new Error("Could not load conversations");
     }
+
+    const data = await response.json();
+
+    setConversations(data);
+  } catch (error) {
+    console.error(
+      "Error loading conversations:",
+      error,
+    );
+  }
+}
+
+    useEffect(() => {
 
     loadConversations();
   }, [trip, currentUser.id]);
+
+  useEffect(() => {
+  if (!liveMessage) {
+    return;
+  }
+
+  if (!trip) {
+    return;
+  }
+
+  if (trip.ownerId !== currentUser.id) {
+    return;
+  }
+
+  if (liveMessage.tripId !== trip._id) {
+    return;
+  }
+
+  loadConversations();
+}, [liveMessage]);
 
   if (!trip) {
     return <p>Loading trip...</p>;
