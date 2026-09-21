@@ -1,6 +1,6 @@
 let socket = null;
 
-function connectChatSocket(userId, onMessage) {
+function connectChatSocket(userId, onMessage, onTripCompletion,) {
   const newSocket = new WebSocket("ws://localhost:3000");
 
   socket = newSocket;
@@ -16,20 +16,26 @@ function connectChatSocket(userId, onMessage) {
     );
   });
 
-  newSocket.addEventListener("message", (event) => {
-    try {
-      const data = JSON.parse(event.data);
+newSocket.addEventListener("message", (event) => {
+  try {
+    const data = JSON.parse(event.data);
 
-      if (data.type === "message") {
-        onMessage(data.message);
-      }
-    } catch (error) {
-      console.error(
-        "Error reading WebSocket message:",
-        error,
-      );
+    if (data.type === "message") {
+      onMessage(data.message);
+      return;
     }
-  });
+
+    if (data.type === "trip_completion") {
+      onTripCompletion(data.completion);
+      return;
+    }
+  } catch (error) {
+    console.error(
+      "Error reading WebSocket message:",
+      error,
+    );
+  }
+});
 
   newSocket.addEventListener("close", () => {
     console.log("WebSocket disconnected");
@@ -89,8 +95,30 @@ function disconnectChatSocket() {
   }
 }
 
+function sendTripCompletionUpdate(
+  toUserId,
+  completion,
+) {
+  if (!socket) {
+    return;
+  }
+
+  if (socket.readyState !== WebSocket.OPEN) {
+    return;
+  }
+
+  socket.send(
+    JSON.stringify({
+      type: "trip_completion",
+      toUserId,
+      completion,
+    }),
+  );
+}
+
 export {
   connectChatSocket,
   sendChatMessage,
   disconnectChatSocket,
+  sendTripCompletionUpdate,
 };

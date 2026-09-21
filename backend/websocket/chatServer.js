@@ -41,6 +41,20 @@ function initializeChatServer(server) {
 
           return;
         }
+        if (data.type === "trip_completion") {
+          const receiverSocket = connectedUsers.get(data.toUserId);
+
+          if (receiverSocket && receiverSocket.readyState === WebSocket.OPEN) {
+            receiverSocket.send(
+              JSON.stringify({
+                type: "trip_completion",
+                completion: data.completion,
+              }),
+            );
+          }
+
+          return;
+        }
       } catch (error) {
         console.error("WebSocket message error:", error);
       }

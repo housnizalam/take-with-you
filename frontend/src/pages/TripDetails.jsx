@@ -34,6 +34,8 @@ function TripDetails() {
     description: "",
   });
 
+  const [liveTripCompletion, setLiveTripCompletion] = useState(null);
+
   const currentUser = getCurrentUser();
 
   const navigate = useNavigate();
@@ -65,17 +67,22 @@ function TripDetails() {
   }, [id]);
 
   useEffect(() => {
-  connectChatSocket(
-    currentUser.id,
-    (message) => {
-      setLiveMessage(message);
-    },
-  );
+    connectChatSocket(
+      currentUser.id,
 
-  return () => {
-    disconnectChatSocket();
-  };
-}, [currentUser.id]);
+      (message) => {
+        setLiveMessage(message);
+      },
+
+      (completion) => {
+        setLiveTripCompletion(completion);
+      },
+    );
+
+    return () => {
+      disconnectChatSocket();
+    };
+  }, [currentUser.id]);
 
   function handleEditChange(event) {
     const { name, value } = event.target;
@@ -178,65 +185,60 @@ function TripDetails() {
   }
 
   async function loadConversations() {
-  if (!trip) {
-    return;
-  }
-
-  if (trip.ownerId !== currentUser.id) {
-    return;
-  }
-
-  try {
-    const response = await fetch(
-      `${apiConfig.baseUrl}/api/messages/trip/${trip._id}/user/${currentUser.id}/conversations`,
-    );
-
-    if (!response.ok) {
-      throw new Error("Could not load conversations");
+    if (!trip) {
+      return;
     }
 
-    const data = await response.json();
+    if (trip.ownerId !== currentUser.id) {
+      return;
+    }
 
-    setConversations(data);
-  } catch (error) {
-    console.error(
-      "Error loading conversations:",
-      error,
-    );
+    try {
+      const response = await fetch(
+        `${apiConfig.baseUrl}/api/messages/trip/${trip._id}/user/${currentUser.id}/conversations`,
+      );
+
+      if (!response.ok) {
+        throw new Error("Could not load conversations");
+      }
+
+      const data = await response.json();
+
+      setConversations(data);
+    } catch (error) {
+      console.error("Error loading conversations:", error);
+    }
   }
-}
 
-    useEffect(() => {
-
+  useEffect(() => {
     loadConversations();
   }, [trip, currentUser.id]);
 
   useEffect(() => {
-  if (!liveMessage) {
-    return;
-  }
+    if (!liveMessage) {
+      return;
+    }
 
-  if (!trip) {
-    return;
-  }
+    if (!trip) {
+      return;
+    }
 
-  if (trip.ownerId !== currentUser.id) {
-    return;
-  }
+    if (trip.ownerId !== currentUser.id) {
+      return;
+    }
 
-  if (liveMessage.tripId !== trip._id) {
-    return;
-  }
+    if (liveMessage.tripId !== trip._id) {
+      return;
+    }
 
-  loadConversations();
-}, [liveMessage]);
+    loadConversations();
+  }, [liveMessage]);
 
   if (!trip) {
     return <p>Loading trip...</p>;
   }
 
   const isOwner = isTripOwner(trip, currentUser);
-
 
   let clientConversationId = null;
 
@@ -384,7 +386,10 @@ function TripDetails() {
                   id: trip.ownerId,
                   name: trip.ownerName,
                 }}
-                 liveMessage={liveMessage}
+                liveMessage={liveMessage}
+                liveTripCompletion={liveTripCompletion}
+                clientUserId={currentUser.id}
+                driverUserId={trip.ownerId}
               />
             ) : conversations.length === 0 ? (
               <p>No messages for this trip yet.</p>
@@ -400,6 +405,9 @@ function TripDetails() {
                     name: conversation.otherUserName,
                   }}
                   liveMessage={liveMessage}
+                  liveTripCompletion={liveTripCompletion}
+                  clientUserId={conversation.otherUserId}
+                  driverUserId={currentUser.id}
                 />
               ))
             )}

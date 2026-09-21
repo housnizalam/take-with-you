@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 
 import apiConfig from "../config/apiConfig.js";
-import { sendChatMessage } from "../services/chatSocketService.js";
+import {
+  sendChatMessage,
+  sendTripCompletionUpdate,
+} from "../services/chatSocketService.js";
 
 function ChatBox({
   tripId,
@@ -9,10 +12,15 @@ function ChatBox({
   currentUser,
   otherUser,
   liveMessage,
+  liveTripCompletion,
+  clientUserId,
+  driverUserId,
 }) {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [tripCompletion, setTripCompletion] = useState(null);
+  const [isConfirmingTrip, setIsConfirmingTrip] = useState(false);
 
   useEffect(() => {
     async function loadMessages() {
@@ -37,33 +45,60 @@ function ChatBox({
   }, [conversationId]);
 
   useEffect(() => {
-  if (!liveMessage) {
-    return;
-  }
-
-  if (
-    liveMessage.conversationId !== conversationId
-  ) {
-    return;
-  }
-
-  setMessages((previousMessages) => {
-    const alreadyExists =
-      previousMessages.some(
-        (message) =>
-          message._id === liveMessage._id,
-      );
-
-    if (alreadyExists) {
-      return previousMessages;
+    if (!liveMessage) {
+      return;
     }
 
-    return [
-      ...previousMessages,
-      liveMessage,
-    ];
-  });
-}, [liveMessage, conversationId]);
+    if (liveMessage.conversationId !== conversationId) {
+      return;
+    }
+
+    setMessages((previousMessages) => {
+      const alreadyExists = previousMessages.some(
+        (message) => message._id === liveMessage._id,
+      );
+
+      if (alreadyExists) {
+        return previousMessages;
+      }
+
+      return [...previousMessages, liveMessage];
+    });
+  }, [liveMessage, conversationId]);
+
+  useEffect(() => {
+    async function loadTripCompletion() {
+      try {
+        const response = await fetch(
+          `${apiConfig.baseUrl}/api/trip-completions/conversation/${conversationId}`,
+        );
+
+        if (!response.ok) {
+          throw new Error("Could not load trip completion");
+        }
+
+        const data = await response.json();
+
+        setTripCompletion(data);
+      } catch (error) {
+        console.error("Error loading trip completion:", error);
+      }
+    }
+
+    loadTripCompletion();
+  }, [conversationId]);
+
+  useEffect(() => {
+    if (!liveTripCompletion) {
+      return;
+    }
+
+    if (liveTripCompletion.conversationId !== conversationId) {
+      return;
+    }
+
+    setTripCompletion(liveTripCompletion);
+  }, [liveTripCompletion, conversationId]);
 
   async function handleSend(event) {
     event.preventDefault();
@@ -109,6 +144,78 @@ function ChatBox({
     }
   }
 
+  async function handleTripComplete() {
+    if (isConfirmingTrip) {
+      return;
+    }
+
+    setIsConfirmingTrip(true);
+
+    try {
+      let completion = tripCompletion;
+
+      if (!completion) {
+        const createResponse = await fetch(
+          `${apiConfig.baseUrl}/api/trip-completions`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              tripId,
+              conversationId,
+              clientUserId,
+              driverUserId,
+            }),
+          },
+        );
+
+        if (!createResponse.ok) {
+          throw new Error("Could not create trip completion");
+        }
+
+        completion = await createResponse.json();
+      }
+
+      const confirmResponse = await fetch(
+        `${apiConfig.baseUrl}/api/trip-completions/conversation/${conversationId}/confirm`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: currentUser.id,
+          }),
+        },
+      );
+
+      if (!confirmResponse.ok) {
+        throw new Error("Could not confirm trip completion");
+      }
+
+      const updatedCompletion = await confirmResponse.json();
+
+      setTripCompletion(updatedCompletion);
+      sendTripCompletionUpdate(otherUser.id, updatedCompletion);
+    } catch (error) {
+      console.error("Error confirming trip completion:", error);
+    } finally {
+      setIsConfirmingTrip(false);
+    }
+  }
+
+  const currentUserConfirmed =
+    tripCompletion &&
+    ((currentUser.id === tripCompletion.clientUserId &&
+      tripCompletion.clientConfirmed) ||
+      (currentUser.id === tripCompletion.driverUserId &&
+        tripCompletion.driverConfirmed));
+
+  const tripFullyCompleted =
+    tripCompletion?.clientConfirmed && tripCompletion?.driverConfirmed;
+
   return (
     <div>
       <h3>Chat with {otherUser.name}</h3>
@@ -142,6 +249,24 @@ function ChatBox({
           {isSending ? "Sending..." : "Send"}
         </button>
       </form>
+
+      <div>
+        <button
+          type="button"
+          onClick={handleTripComplete}
+          disabled={
+            isConfirmingTrip || currentUserConfirmed || tripFullyCompleted
+          }
+        >
+          {tripFullyCompleted
+            ? "Trip Completed"
+            : currentUserConfirmed
+              ? "Waiting for other user..."
+              : isConfirmingTrip
+                ? "Confirming..."
+                : "Trip Complete"}
+        </button>
+      </div>
     </div>
   );
 }

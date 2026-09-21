@@ -11,6 +11,7 @@ import messageRoutes from "./routes/messageRoutes.js";
 import http from "http";
 import { initializeChatServer } from "./websocket/chatServer.js";
 import userRoutes from "./routes/userRoutes.js";
+import tripCompletionRoutes from "./routes/tripCompletionRoutes.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -32,6 +33,8 @@ app.use("/api/messages", messageRoutes);
 
 app.use("/api/users", userRoutes);
 
+app.use("/api/trip-completions", tripCompletionRoutes);
+
 app.get("/api", (req, res) => {
   res.json({
     message: "Take With You API is running",
@@ -47,20 +50,17 @@ async function startServer() {
     await createIndexes();
     await cleanupExpiredData();
 
-initializeChatServer(server);
+    initializeChatServer(server);
 
-server.listen(PORT, () => {
-  console.log(
-    `Server is running on http://localhost:${PORT}`,
-  );
-});
+    server.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
 
     const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 
     setInterval(() => {
       cleanupExpiredData();
     }, TWENTY_FOUR_HOURS);
-
   } catch (error) {
     console.error("Could not connect to CouchDB:");
     console.error(error.message);
