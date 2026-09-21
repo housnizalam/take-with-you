@@ -21,6 +21,13 @@ function ChatBox({
   const [isSending, setIsSending] = useState(false);
   const [tripCompletion, setTripCompletion] = useState(null);
   const [isConfirmingTrip, setIsConfirmingTrip] = useState(false);
+  const [ratingScore, setRatingScore] = useState(0);
+  const [existingRating, setExistingRating] = useState(null);
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
+  const [otherUserRating, setOtherUserRating] = useState({
+    averageRating: 0,
+    ratingCount: 0,
+  });
 
   useEffect(() => {
     async function loadMessages() {
@@ -99,6 +106,68 @@ function ChatBox({
 
     setTripCompletion(liveTripCompletion);
   }, [liveTripCompletion, conversationId]);
+
+  const currentUserConfirmed =
+    tripCompletion &&
+    ((currentUser.id === tripCompletion.clientUserId &&
+      tripCompletion.clientConfirmed) ||
+      (currentUser.id === tripCompletion.driverUserId &&
+        tripCompletion.driverConfirmed));
+
+  const tripFullyCompleted =
+    tripCompletion?.clientConfirmed && tripCompletion?.driverConfirmed;
+
+  useEffect(() => {
+    async function loadExistingRating() {
+      if (!tripFullyCompleted) {
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${apiConfig.baseUrl}/api/ratings/trip/${tripId}/from/${currentUser.id}/to/${otherUser.id}`,
+        );
+
+        if (!response.ok) {
+          throw new Error("Could not load existing rating");
+        }
+
+        const data = await response.json();
+
+        setExistingRating(data);
+      } catch (error) {
+        console.error("Error loading existing rating:", error);
+      }
+    }
+
+    loadExistingRating();
+  }, [tripFullyCompleted, tripId, currentUser.id, otherUser.id]);
+
+  useEffect(() => {
+    async function loadOtherUserRating() {
+      if (!otherUser?.id) {
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${apiConfig.baseUrl}/api/ratings/user/${otherUser.id}/summary`,
+        );
+
+        if (!response.ok) {
+          throw new Error("Could not load user rating");
+        }
+
+        const data = await response.json();
+
+        setOtherUserRating(data);
+      } catch (error) {
+        console.error("Error loading other user rating:", error);
+      }
+    }
+
+    loadOtherUserRating();
+  }, [otherUser.id]);
 
   async function handleSend(event) {
     event.preventDefault();
@@ -206,19 +275,52 @@ function ChatBox({
     }
   }
 
-  const currentUserConfirmed =
-    tripCompletion &&
-    ((currentUser.id === tripCompletion.clientUserId &&
-      tripCompletion.clientConfirmed) ||
-      (currentUser.id === tripCompletion.driverUserId &&
-        tripCompletion.driverConfirmed));
+  async function handleSubmitRating() {
+    if (ratingScore < 1 || ratingScore > 5 || isSubmittingRating) {
+      return;
+    }
 
-  const tripFullyCompleted =
-    tripCompletion?.clientConfirmed && tripCompletion?.driverConfirmed;
+    setIsSubmittingRating(true);
+
+    try {
+      const response = await fetch(`${apiConfig.baseUrl}/api/ratings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tripId,
+          conversationId,
+          fromUserId: currentUser.id,
+          toUserId: otherUser.id,
+          score: ratingScore,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Could not submit rating");
+      }
+
+      const savedRating = await response.json();
+
+      setExistingRating(savedRating);
+      setRatingScore(0);
+    } catch (error) {
+      console.error("Error submitting rating:", error);
+    } finally {
+      setIsSubmittingRating(false);
+    }
+  }
 
   return (
     <div>
-      <h3>Chat with {otherUser.name}</h3>
+      <h3>
+        Chat with {otherUser.name}
+        {" — "}
+        {otherUserRating.ratingCount === 0
+          ? "No ratings yet"
+          : `${otherUserRating.averageRating.toFixed(1)} / 5 (${otherUserRating.ratingCount})`}
+      </h3>
 
       <div>
         {messages.length === 0 ? (
@@ -267,6 +369,31 @@ function ChatBox({
                 : "Trip Complete"}
         </button>
       </div>
+      {tripFullyCompleted && !existingRating && (
+        <div>
+          <p>Rate {otherUser.name}:</p>
+
+          <div>
+            {[1, 2, 3, 4, 5].map((score) => (
+              <button
+                key={score}
+                type="button"
+                onClick={() => setRatingScore(score)}
+              >
+                {score <= ratingScore ? "★" : "☆"}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSubmitRating}
+            disabled={ratingScore === 0 || isSubmittingRating}
+          >
+            {isSubmittingRating ? "Submitting..." : "Submit Rating"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

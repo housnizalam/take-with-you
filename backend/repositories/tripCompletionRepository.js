@@ -90,8 +90,30 @@ async function confirmTripCompletion(
   };
 }
 
+async function deleteTripCompletionsByTripId(tripId) {
+  const db = await getDatabase();
+
+  const result = await db.find({
+    selector: {
+      type: "trip_completion",
+      tripId,
+    },
+    limit: 1000,
+  });
+
+  for (const completion of result.docs) {
+    await db.destroy(
+      completion._id,
+      completion._rev,
+    );
+  }
+
+  return result.docs.length;
+}
+
 export {
   createTripCompletion,
   getTripCompletionByConversationId,
   confirmTripCompletion,
+  deleteTripCompletionsByTripId,
 };

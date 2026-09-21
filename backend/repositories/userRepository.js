@@ -39,8 +39,27 @@ async function getAllUsers() {
   return result.docs;
 }
 
+async function getUserByEmail(email) {
+  const db = await getDatabase();
+
+  const result = await db.find({
+    selector: {
+      type: "user",
+      email: email.toLowerCase(),
+    },
+    limit: 1,
+  });
+
+  if (result.docs.length === 0) {
+    return null;
+  }
+
+  return result.docs[0];
+}
+
 export {
   createUser,
   getUserById,
   getAllUsers,
+  getUserByEmail,
 };

@@ -1,6 +1,7 @@
 import { deleteExpiredTrips } from "../repositories/tripRepository.js";
 import { deleteExpiredNeeds } from "../repositories/needRepository.js";
 import { deleteMessagesByTripId } from "../repositories/messageRepository.js";
+import { deleteTripCompletionsByTripId } from "../repositories/tripCompletionRepository.js";
 
 function getCutoffDate() {
   const date = new Date();
@@ -24,6 +25,8 @@ async function cleanupExpiredData() {
 
     for (const tripId of deletedTripIds) {
       await deleteMessagesByTripId(tripId);
+
+      await deleteTripCompletionsByTripId(tripId);
     }
 
     const deletedNeeds = await deleteExpiredNeeds(cutoffDate);

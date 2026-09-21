@@ -36,6 +36,11 @@ function TripDetails() {
 
   const [liveTripCompletion, setLiveTripCompletion] = useState(null);
 
+  const [driverRating, setDriverRating] = useState({
+    averageRating: 0,
+    ratingCount: 0,
+  });
+
   const currentUser = getCurrentUser();
 
   const navigate = useNavigate();
@@ -234,6 +239,32 @@ function TripDetails() {
     loadConversations();
   }, [liveMessage]);
 
+  useEffect(() => {
+    async function loadDriverRating() {
+      if (!trip?.ownerId) {
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${apiConfig.baseUrl}/api/ratings/user/${trip.ownerId}/summary`,
+        );
+
+        if (!response.ok) {
+          throw new Error("Could not load driver rating");
+        }
+
+        const data = await response.json();
+
+        setDriverRating(data);
+      } catch (error) {
+        console.error("Error loading driver rating:", error);
+      }
+    }
+
+    loadDriverRating();
+  }, [trip?.ownerId]);
+
   if (!trip) {
     return <p>Loading trip...</p>;
   }
@@ -369,7 +400,14 @@ function TripDetails() {
             <h2>Driver Information</h2>
 
             <p>Name: {trip.ownerName}</p>
-            <p>Rating: Not available yet</p>
+            {driverRating.ratingCount === 0 ? (
+              <p>Rating: No ratings yet</p>
+            ) : (
+              <p>
+                Rating: {driverRating.averageRating.toFixed(1)} / 5 (
+                {driverRating.ratingCount} ratings)
+              </p>
+            )}
           </section>
 
           <hr />

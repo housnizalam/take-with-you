@@ -12,6 +12,7 @@ import http from "http";
 import { initializeChatServer } from "./websocket/chatServer.js";
 import userRoutes from "./routes/userRoutes.js";
 import tripCompletionRoutes from "./routes/tripCompletionRoutes.js";
+import ratingRoutes from "./routes/ratingRoutes.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -42,7 +43,10 @@ app.get("/api", (req, res) => {
 });
 
 app.use("/api/trips", tripRoutes);
+
 app.use("/api/needs", needRoutes);
+
+app.use("/api/ratings", ratingRoutes);
 
 async function startServer() {
   try {

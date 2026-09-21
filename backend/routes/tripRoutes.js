@@ -10,6 +10,7 @@ import formidable from "formidable";
 import path from "path";
 import { geocodeLocation } from "../services/geocodingService.js";
 import { deleteMessagesByTripId } from "../repositories/messageRepository.js";
+import { deleteTripCompletionsByTripId } from "../repositories/tripCompletionRepository.js";
 
 const router = express.Router();
 
@@ -130,6 +131,10 @@ router.delete("/:id", async (req, res) => {
 
     await deleteMessagesByTripId(tripId);
 
+    await deleteTripCompletionsByTripId(
+      tripId,
+    );
+
     const result = await deleteTrip(tripId);
 
     res.status(200).json({
@@ -139,7 +144,7 @@ router.delete("/:id", async (req, res) => {
   } catch (error) {
     console.error(
       "Error deleting trip:",
-      error.message,
+      error,
     );
 
     res.status(500).json({
