@@ -1,28 +1,30 @@
-body {
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
   margin: 0;
-  font-family: Arial, sans-serif;
+    --primary-gradient: linear-gradient(
+    110deg,
+    #5637ff 0%,
+    #585cff 48%,
+    #3d9aff 100%
+  );
 }
 
-.button-spinner {
-  display: inline-block;
+body {
+  min-width: 320px;
 
-  width: 14px;
-  height: 14px;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 
-  margin-right: 8px;
-
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-
-  border-radius: 50%;
-
-  vertical-align: middle;
-
-  animation: button-spin 0.7s linear infinite;
-}
-
-@keyframes button-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  background: #071127;
 }
