@@ -282,6 +282,14 @@ function ChatBox({
 
     setIsSubmittingRating(true);
 
+    console.log("RATING DATA:", {
+  tripId,
+  conversationId,
+  fromUserId: currentUser.id,
+  toUserId: otherUser.id,
+  score: ratingScore,
+});
+
     try {
       const response = await fetch(`${apiConfig.baseUrl}/api/ratings`, {
         method: "POST",
