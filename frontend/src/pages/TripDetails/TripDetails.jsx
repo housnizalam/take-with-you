@@ -10,6 +10,14 @@ import {
   connectChatSocket,
   disconnectChatSocket,
 } from "../../services/chatSocketService.js";
+import tripDetailsPhoto from "../../assets/images/trip_details_photo.png";
+import "./TripDetails.css";
+
+function renderStars(ratingValue = 0) {
+  const roundedRating = Math.round(ratingValue);
+
+  return "★".repeat(roundedRating) + "☆".repeat(5 - roundedRating);
+}
 
 function TripDetails() {
   const { id } = useParams();
@@ -282,12 +290,27 @@ function TripDetails() {
   }
 
   return (
-    <div>
+    <div
+      className="trip-details-page"
+      style={{
+        backgroundImage: `
+        linear-gradient(
+          rgba(5, 14, 34, 0.5),
+          rgba(5, 14, 34, 0.8)
+        ),
+        url(${tripDetailsPhoto})
+      `,
+      }}
+    >
+      {" "}
       {isEditing ? (
-        <form onSubmit={handleSave}>
-          <h1>Edit Trip</h1>
-
-          <div>
+        <form className="trip-edit-card" onSubmit={handleSave}>
+          <div className="trip-details-heading">
+            <span>MANAGE YOUR JOURNEY</span>
+            <h1>Edit Trip</h1>
+          </div>
+          <div className="trip-edit-field">
+            {" "}
             <label>From:</label>
             <input
               type="text"
@@ -297,7 +320,8 @@ function TripDetails() {
             />
           </div>
 
-          <div>
+          <div className="trip-edit-field">
+            {" "}
             <label>To:</label>
             <input
               type="text"
@@ -307,7 +331,8 @@ function TripDetails() {
             />
           </div>
 
-          <div>
+          <div className="trip-edit-field">
+            {" "}
             <label>Date:</label>
             <input
               type="date"
@@ -317,7 +342,8 @@ function TripDetails() {
             />
           </div>
 
-          <div>
+          <div className="trip-edit-field">
+            {" "}
             <label>Car Type:</label>
             <input
               type="text"
@@ -327,7 +353,8 @@ function TripDetails() {
             />
           </div>
 
-          <div>
+          <div className="trip-edit-field">
+            {" "}
             <label>Available Seats:</label>
             <input
               type="number"
@@ -338,7 +365,8 @@ function TripDetails() {
             />
           </div>
 
-          <div>
+          <div className="trip-edit-field">
+            {" "}
             <label>Available Boxes:</label>
             <input
               type="number"
@@ -372,48 +400,101 @@ function TripDetails() {
         </form>
       ) : (
         <>
-          <h1>
-            {trip.from} → {trip.to}
-          </h1>
+          <div className="trip-details-hero">
+            <span className="trip-details-hero__eyebrow">TRIP DETAILS</span>
 
-          <p>Date: {trip.date}</p>
-          <p>Driver: {trip.ownerName}</p>
-          <p>Car: {trip.carType}</p>
-          <p>Available Seats: {trip.availableSeats}</p>
-          <p>Available Boxes: {trip.availableBoxes}</p>
-          <p>Description: {trip.description}</p>
+            <h1>
+              {trip.from} → {trip.to}
+            </h1>
 
-          <div>
-            {trip.carImages?.map((imagePath) => (
-              <img
-                key={imagePath}
-                src={`${apiConfig.baseUrl}${imagePath}`}
-                alt={`${trip.carType} car`}
-                width="300"
-              />
-            ))}
+            <div className="trip-details-date">{trip.date}</div>
+
+            <div className="trip-details-hero__meta">
+              <span>{trip.carType}</span>
+            </div>
           </div>
 
-          <hr />
+          <section className="trip-info-card">
+            <div className="trip-info-grid">
+              <div className="trip-info-item">
+                <span>Driver</span>
+                <strong>{trip.ownerName}</strong>
+              </div>
 
-          <section>
-            <h2>Driver Information</h2>
+              <div className="trip-info-item">
+                <span>Car</span>
+                <strong>{trip.carType}</strong>
+              </div>
 
-            <p>Name: {trip.ownerName}</p>
-            {driverRating.ratingCount === 0 ? (
-              <p>Rating: No ratings yet</p>
-            ) : (
-              <p>
-                Rating: {driverRating.averageRating.toFixed(1)} / 5 (
-                {driverRating.ratingCount} ratings)
-              </p>
+              <div className="trip-info-item">
+                <span>Available Seats</span>
+                <strong>{trip.availableSeats}</strong>
+              </div>
+
+              <div className="trip-info-item">
+                <span>Available Boxes</span>
+                <strong>{trip.availableBoxes}</strong>
+              </div>
+            </div>
+
+            {trip.description && (
+              <div className="trip-description">
+                <span>Description</span>
+                <p>{trip.description}</p>
+              </div>
             )}
           </section>
 
-          <hr />
+          <section className="trip-car-gallery">
+            <div className="trip-section-header">
+              <h2>Vehicle</h2>
+            </div>
 
-          <section>
-            <h2>Messages</h2>
+            {trip.carImages?.length > 0 ? (
+              <div className="trip-car-gallery__scroll">
+                {trip.carImages.map((imagePath) => (
+                  <img
+                    key={imagePath}
+                    src={`${apiConfig.baseUrl}${imagePath}`}
+                    alt={`${trip.carType} car`}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="trip-no-car-photo">
+                <strong>No car photo</strong>
+                <span>The driver did not upload a photo of this vehicle.</span>
+              </div>
+            )}
+          </section>
+          <section className="trip-driver-card">
+            <div className="trip-section-header">
+              <h2>Driver Information</h2>
+            </div>
+
+            <div className="trip-driver-profile">
+              <span className="trip-driver-name">{trip.ownerName}</span>
+
+              {driverRating.ratingCount === 0 ? (
+                <span className="trip-driver-no-rating">No ratings yet</span>
+              ) : (
+                <>
+                  <span className="trip-driver-stars">
+                    {"★".repeat(Math.round(driverRating.averageRating))}
+                    {"☆".repeat(5 - Math.round(driverRating.averageRating))}
+                  </span>
+
+                  <span className="trip-driver-rating-count">
+                    ({driverRating.ratingCount})
+                  </span>
+                </>
+              )}
+            </div>
+          </section>
+          <section className="trip-messages-card">
+            <div className="trip-section-header">
+              <h2>Messages</h2>
+            </div>
 
             {!isOwner ? (
               <ChatBox
@@ -453,23 +534,29 @@ function TripDetails() {
 
           {isOwner && (
             <>
-              <hr />
+              <section className="trip-manage-card">
+                <div className="trip-section-header">
+                  <h2>Manage Trip</h2>
+                </div>
 
-              <section>
-                <h2>Manage Trip</h2>
+                <div className="trip-manage-actions">
+                  <button
+                    type="button"
+                    className="trip-edit-button"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    Edit Trip
+                  </button>
 
-                <button type="button" onClick={() => setIsEditing(true)}>
-                  Edit Trip
-                </button>
-
-                <LoadingButton
-                  type="button"
-                  onClick={handleDelete}
-                  loading={isDeleting}
-                  loadingText="Deleting..."
-                >
-                  Delete Trip
-                </LoadingButton>
+                  <LoadingButton
+                    type="button"
+                    onClick={handleDelete}
+                    loading={isDeleting}
+                    loadingText="Deleting..."
+                  >
+                    Delete Trip
+                  </LoadingButton>
+                </div>
               </section>
             </>
           )}

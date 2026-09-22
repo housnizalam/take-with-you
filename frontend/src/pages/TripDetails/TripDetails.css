@@ -1,0 +1,444 @@
+.trip-details-page {
+  min-height: 100vh;
+  padding: 28px;
+
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+
+  color: white;
+}
+
+/* HEADING */
+
+.trip-details-heading,
+.trip-details-hero {
+  max-width: 1050px;
+  margin-bottom: 22px;
+}
+
+.trip-details-heading > span,
+.trip-details-hero__eyebrow {
+  display: block;
+  margin-bottom: 8px;
+
+  color: #9ca7ff;
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.trip-details-heading h1,
+.trip-details-hero h1 {
+  margin: 0;
+
+  color: white;
+
+  font-size: 42px;
+  letter-spacing: -1.5px;
+}
+
+.trip-details-hero__meta {
+  display: flex;
+  gap: 10px;
+
+  margin-top: 12px;
+}
+
+.trip-details-hero__meta span {
+  padding: 6px 10px;
+
+  border-radius: 8px;
+
+  background: rgba(255, 255, 255, 0.06);
+
+  color: #c7cfdf;
+
+  font-size: 12px;
+}
+
+/* GENERIC CARD */
+
+.trip-info-card,
+.trip-driver-card,
+.trip-messages-card,
+.trip-manage-card,
+.trip-edit-card,
+.trip-car-gallery {
+  max-width: 1050px;
+
+  margin-bottom: 18px;
+  padding: 22px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(9, 22, 49, 0.8),
+      rgba(6, 16, 36, 0.9)
+    );
+
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.22);
+
+}
+
+/* TRIP INFO */
+
+.trip-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+
+  gap: 14px;
+}
+
+.trip-info-item {
+  padding: 14px;
+
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.trip-info-item span {
+  display: block;
+
+  color: #7f8ca8;
+
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.trip-info-item strong {
+  display: block;
+
+  margin-top: 7px;
+
+  color: white;
+
+  font-size: 16px;
+}
+
+.trip-description {
+  margin-top: 18px;
+  padding-top: 16px;
+
+  border-top:
+    1px solid rgba(255, 255, 255, 0.07);
+}
+
+.trip-description > span {
+  color: #7f8ca8;
+
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.trip-description p {
+  margin: 8px 0 0;
+
+  color: #d2d8e5;
+
+  line-height: 1.6;
+}
+
+/* SECTION HEADER */
+
+.trip-section-header {
+  margin-bottom: 16px;
+}
+
+.trip-section-header h2 {
+  margin: 0;
+
+  color: white;
+
+  font-size: 20px;
+}
+
+/* CAR GALLERY */
+.trip-car-gallery__scroll {
+  display: flex;
+  gap: 16px;
+
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.trip-car-gallery__item {
+  flex: 0 0 420px;
+  height: 260px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 16px;
+  padding: 14px;
+
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.trip-car-gallery__item img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+  display: block;
+
+  border-radius: 12px;
+  background: white;
+}
+
+.trip-no-car-photo {
+  flex: 0 0 420px;
+  height: 260px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 16px;
+  padding: 14px;
+
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  text-align: center;
+}
+
+.trip-no-car-photo strong {
+  color: #dce3f3;
+
+  font-size: 15px;
+}
+
+.trip-no-car-photo span {
+  margin-top: 7px;
+
+  color: #7f8ca8;
+
+  font-size: 12px;
+}
+
+/* DRIVER */
+
+.trip-driver-card p {
+  margin: 8px 0;
+
+  color: #c7cfdf;
+}
+
+/* MESSAGES */
+
+.trip-messages-card {
+  overflow: hidden;
+}
+
+.trip-messages-card > p {
+  color: #8895ae;
+}
+
+/* MANAGE */
+
+.trip-manage-actions,
+.trip-edit-actions {
+  display: flex;
+  gap: 12px;
+
+  flex-wrap: wrap;
+}
+
+.trip-edit-button,
+.trip-secondary-button,
+.trip-manage-actions button,
+.trip-edit-actions button {
+  padding: 10px 16px;
+
+  border: 0;
+  border-radius: 10px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.trip-edit-button {
+  background: var(--primary-gradient);
+
+  color: white;
+}
+
+.trip-secondary-button {
+  background: rgba(255, 255, 255, 0.06);
+
+  color: #d3daea;
+
+  border:
+    1px solid rgba(255, 255, 255, 0.08);
+}
+
+.trip-manage-actions button:last-child {
+  background:
+    rgba(140, 25, 50, 0.22);
+
+  color: #ff9aad;
+
+  border:
+    1px solid rgba(255, 108, 132, 0.25);
+}
+
+/* EDIT FORM */
+
+.trip-edit-card {
+  max-width: 1050px;
+}
+
+.trip-edit-field {
+  display: flex;
+  flex-direction: column;
+
+  margin-bottom: 14px;
+}
+
+.trip-edit-field label {
+  margin-bottom: 7px;
+
+  color: #cbd3e3;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.trip-edit-field input,
+.trip-edit-field textarea {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  border:
+    1px solid rgba(255, 255, 255, 0.09);
+
+  border-radius: 11px;
+
+  background:
+    rgba(255, 255, 255, 0.045);
+
+  color: white;
+
+  font-family: inherit;
+  font-size: 14px;
+
+  outline: none;
+}
+
+.trip-edit-field input {
+  height: 46px;
+
+  padding: 0 13px;
+}
+
+.trip-edit-field textarea {
+  min-height: 110px;
+
+  padding: 12px 13px;
+
+  resize: vertical;
+}
+
+.trip-edit-field input:focus,
+.trip-edit-field textarea:focus {
+  border-color:
+    rgba(100, 98, 255, 0.6);
+
+  box-shadow:
+    0 0 0 3px rgba(89, 86, 255, 0.09);
+}
+
+.trip-edit-field input[type="date"] {
+  color-scheme: dark;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+  .trip-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .trip-details-page {
+    padding: 16px;
+  }
+
+  .trip-details-heading h1,
+  .trip-details-hero h1 {
+    font-size: 34px;
+  }
+
+  .trip-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .trip-car-gallery__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .trip-car-gallery__grid img {
+    height: 200px;
+  }
+}
+
+.trip-details-date {
+  margin-top: 10px;
+  margin-bottom: 12px;
+
+  color: #dfe6ff;
+
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.trip-driver-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  flex-wrap: wrap;
+}
+
+.trip-driver-name {
+  color: white;
+
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.trip-driver-stars {
+  color: #ffd35a;
+
+  font-size: 30px;
+  letter-spacing: 1px;
+}
+
+.trip-driver-rating-count {
+  color: #a9b4ca;
+
+  font-size: 30px;
+}
+
+.trip-driver-no-rating {
+  color: #8895ae;
+
+  font-size: 13px;
+}

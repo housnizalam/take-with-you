@@ -14,8 +14,8 @@
   background:
     linear-gradient(
       145deg,
-      rgba(16, 31, 63, 0.95),
-      rgba(9, 21, 45, 0.95)
+      rgba(16, 31, 63, 0.8),
+      rgba(9, 21, 45, 0.9)
     );
 
   box-shadow:
@@ -201,8 +201,8 @@
   background:
     linear-gradient(
       145deg,
-      rgba(12, 27, 57, 0.96),
-      rgba(7, 18, 40, 0.96)
+      rgba(12, 27, 57, 0.8),
+      rgba(7, 18, 40, 0.9)
     );
 
   color: white;
@@ -258,8 +258,8 @@
   background:
     linear-gradient(
       145deg,
-      rgba(22, 35, 63, 0.98),
-      rgba(10, 20, 41, 0.98)
+      rgba(22, 35, 63, 0.8),
+      rgba(10, 20, 41, 0.9)
     );
 
   text-align: center;

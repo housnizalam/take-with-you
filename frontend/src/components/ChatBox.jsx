@@ -5,6 +5,7 @@ import {
   sendChatMessage,
   sendTripCompletionUpdate,
 } from "../services/chatSocketService.js";
+import "./ChatBox.css";
 
 function ChatBox({
   tripId,
@@ -283,12 +284,12 @@ function ChatBox({
     setIsSubmittingRating(true);
 
     console.log("RATING DATA:", {
-  tripId,
-  conversationId,
-  fromUserId: currentUser.id,
-  toUserId: otherUser.id,
-  score: ratingScore,
-});
+      tripId,
+      conversationId,
+      fromUserId: currentUser.id,
+      toUserId: otherUser.id,
+      score: ratingScore,
+    });
 
     try {
       const response = await fetch(`${apiConfig.baseUrl}/api/ratings`, {
@@ -321,33 +322,61 @@ function ChatBox({
   }
 
   return (
-    <div>
-      <h3>
-        Chat with {otherUser.name}
-        {" — "}
-        {otherUserRating.ratingCount === 0
-          ? "No ratings yet"
-          : `${otherUserRating.averageRating.toFixed(1)} / 5 (${otherUserRating.ratingCount})`}
-      </h3>
+    <div className="chat-box">
+      <div className="chat-box__header">
+        <div>
+          <span className="chat-box__label">CONVERSATION</span>
 
-      <div>
+          <div className="chat-box__user">
+            <strong>{otherUser.name}</strong>
+
+            {otherUserRating.ratingCount === 0 ? (
+              <span className="chat-box__no-rating">No ratings yet</span>
+            ) : (
+              <>
+                <span className="chat-box__stars">
+                  {"★".repeat(Math.round(otherUserRating.averageRating))}
+
+                  {"☆".repeat(5 - Math.round(otherUserRating.averageRating))}
+                </span>
+
+                <span className="chat-box__rating-count">
+                  ({otherUserRating.ratingCount})
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="chat-box__messages">
         {messages.length === 0 ? (
-          <p>No messages yet.</p>
+          <div className="chat-box__empty">No messages yet.</div>
         ) : (
           messages.map((message) => {
             const isOwnMessage = message.fromUserId === currentUser.id;
 
             return (
-              <div key={message._id}>
-                <strong>{isOwnMessage ? "You" : otherUser.name}:</strong>{" "}
-                {message.text}
+              <div
+                key={message._id}
+                className={
+                  isOwnMessage
+                    ? "chat-message chat-message--own"
+                    : "chat-message chat-message--other"
+                }
+              >
+                <span className="chat-message__sender">
+                  {isOwnMessage ? "You" : otherUser.name}
+                </span>
+
+                <div className="chat-message__bubble">{message.text}</div>
               </div>
             );
           })
         )}
       </div>
 
-      <form onSubmit={handleSend}>
+      <form className="chat-box__form" onSubmit={handleSend}>
         <input
           type="text"
           value={text}
@@ -360,32 +389,49 @@ function ChatBox({
         </button>
       </form>
 
-      <div>
-        <button
-          type="button"
-          onClick={handleTripComplete}
-          disabled={
-            isConfirmingTrip || currentUserConfirmed || tripFullyCompleted
-          }
-        >
-          {tripFullyCompleted
-            ? "Trip Completed"
-            : currentUserConfirmed
-              ? "Waiting for other user..."
-              : isConfirmingTrip
-                ? "Confirming..."
-                : "Trip Complete"}
-        </button>
-      </div>
-      {tripFullyCompleted && !existingRating && (
-        <div>
-          <p>Rate {otherUser.name}:</p>
+<div className="chat-box__completion">
+  <p className="chat-box__completion-note">
+    Use this only when the trip has actually finished.
+  </p>
 
-          <div>
+  <button
+    type="button"
+    className={
+      tripFullyCompleted
+        ? "chat-complete-button chat-complete-button--done"
+        : "chat-complete-button"
+    }
+    onClick={handleTripComplete}
+    disabled={
+      isConfirmingTrip ||
+      currentUserConfirmed ||
+      tripFullyCompleted
+    }
+  >
+    {tripFullyCompleted
+      ? "Trip Completed"
+      : currentUserConfirmed
+        ? "Waiting for other user..."
+        : isConfirmingTrip
+          ? "Confirming..."
+          : "Trip Complete"}
+  </button>
+</div>
+
+      {tripFullyCompleted && !existingRating && (
+        <div className="chat-rating">
+          <div className="chat-rating__header">Rate {otherUser.name}</div>
+
+          <div className="chat-rating__stars">
             {[1, 2, 3, 4, 5].map((score) => (
               <button
                 key={score}
                 type="button"
+                className={
+                  score <= ratingScore
+                    ? "chat-rating__star chat-rating__star--active"
+                    : "chat-rating__star"
+                }
                 onClick={() => setRatingScore(score)}
               >
                 {score <= ratingScore ? "★" : "☆"}
@@ -395,11 +441,22 @@ function ChatBox({
 
           <button
             type="button"
+            className="chat-rating__submit"
             onClick={handleSubmitRating}
             disabled={ratingScore === 0 || isSubmittingRating}
           >
             {isSubmittingRating ? "Submitting..." : "Submit Rating"}
           </button>
+        </div>
+      )}
+
+      {existingRating && (
+        <div className="chat-rating__submitted">
+          Your rating:
+          <span>
+            {"★".repeat(existingRating.score)}
+            {"☆".repeat(5 - existingRating.score)}
+          </span>
         </div>
       )}
     </div>
