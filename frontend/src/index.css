@@ -28,3 +28,26 @@ body {
 
   background: #071127;
 }
+
+.button-spinner {
+  width: 16px;
+  height: 16px;
+
+  display: inline-block;
+
+  margin-right: 8px;
+
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: white;
+  border-radius: 50%;
+
+  vertical-align: middle;
+
+  animation: button-spin 0.7s linear infinite;
+}
+
+@keyframes button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
