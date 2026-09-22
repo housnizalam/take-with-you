@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import apiConfig from "../../config/apiConfig.js";
 import { getCurrentUser } from "../../auth/currentUser.js";
 import loginPhoto from "../../assets/images/log_in_photo.png";
+import tripsPhoto from "../../assets/images/trips_photo.png";
 import "./Trips.css";
 
 function Trips() {
@@ -30,7 +31,18 @@ function Trips() {
   }, []);
 
   return (
-    <div className="trips-page">
+    <div
+      className="trips-page"
+      style={{
+        backgroundImage: `
+      linear-gradient(
+        rgba(6, 15, 35, 0.1),
+        rgba(6, 15, 35, 0.4)
+      ),
+      url(${tripsPhoto})
+    `,
+      }}
+    >
       <div className="trips-page__header">
         <div>
           <span className="trips-page__eyebrow">YOUR JOURNEYS</span>

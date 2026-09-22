@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import apiConfig from "../config/apiConfig.js";
-import { getCurrentUser } from "../auth/currentUser.js";
-import { isTripOwner } from "../auth/permissions.js";
+import apiConfig from "../../config/apiConfig.js";
+import { getCurrentUser } from "../../auth/currentUser.js";
+import { isTripOwner } from "../../auth/permissions.js";
 import { useNavigate, useParams } from "react-router-dom";
-import LoadingButton from "../components/LoadingButton.jsx";
-import ChatBox from "../components/ChatBox.jsx";
-import { createConversationId } from "../services/conversationService.js";
+import LoadingButton from "../../components/LoadingButton.jsx";
+import ChatBox from "../../components/ChatBox.jsx";
+import { createConversationId } from "../../services/conversationService.js";
 import {
   connectChatSocket,
   disconnectChatSocket,
-} from "../services/chatSocketService.js";
+} from "../../services/chatSocketService.js";
 
 function TripDetails() {
   const { id } = useParams();

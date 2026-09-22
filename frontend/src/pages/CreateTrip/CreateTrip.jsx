@@ -1,7 +1,7 @@
 import { useState } from "react";
-import apiConfig from "../config/apiConfig.js";
-import { getCurrentUser } from "../auth/currentUser.js";
-import LoadingButton from "../components/LoadingButton.jsx";
+import apiConfig from "../../config/apiConfig.js";
+import { getCurrentUser } from "../../auth/currentUser.js";
+import LoadingButton from "../../components/LoadingButton.jsx";
 
 function CreateTrip() {
   const [formData, setFormData] = useState({

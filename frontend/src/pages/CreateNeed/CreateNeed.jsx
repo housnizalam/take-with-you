@@ -1,8 +1,8 @@
 import { useState } from "react";
-import apiConfig from "../config/apiConfig.js";
+import apiConfig from "../../config/apiConfig.js";
 import { Link } from "react-router-dom";
-import LoadingButton from "../components/LoadingButton.jsx";
-import { getCurrentUser } from "../auth/currentUser.js";
+import LoadingButton from "../../components/LoadingButton.jsx";
+import { getCurrentUser } from "../../auth/currentUser.js";
 
 function getTodayDate() {
   const today = new Date();

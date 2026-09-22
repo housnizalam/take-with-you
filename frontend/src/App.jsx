@@ -2,12 +2,12 @@ import { Route, Routes } from "react-router-dom";
 
 import Home from "./pages/home/Home.jsx";
 import Trips from "./pages/Trips/Trips.jsx";
-import CreateTrip from "./pages/CreateTrip.jsx";
-import CreateNeed from "./pages/CreateNeed.jsx";
-import TripDetails from "./pages/TripDetails.jsx";
-import Needs from "./pages/Needs.jsx";
-import Auth from "./pages/Auth/Auth.jsx";
+import CreateTrip from "./pages/CreateTrip/CreateTrip.jsx";
+import CreateNeed from "./pages/CreateNeed/CreateNeed.jsx";
+import TripDetails from "./pages/TripDetails/TripDetails.jsx";
+import Needs from "./pages/Needs/Needs.jsx";
 
+import Auth from "./pages/Auth/Auth.jsx";
 import AppLayout from "./layouts/AppLayout/AppLayout.jsx";
 
 import { getCurrentUser } from "./auth/currentUser.js";
