@@ -1,8 +1,13 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
 import apiConfig from "../../config/apiConfig.js";
-import { Link } from "react-router-dom";
 import LoadingButton from "../../components/LoadingButton.jsx";
 import { getCurrentUser } from "../../auth/currentUser.js";
+
+import createNeedPhoto from "../../assets/images/create_need_photo.png";
+
+import "./CreateNeed.css";
 
 function getTodayDate() {
   const today = new Date();
@@ -43,6 +48,7 @@ function CreateNeed() {
       [name]: value,
     });
   }
+  const navigate = useNavigate();
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -51,21 +57,20 @@ function CreateNeed() {
       return;
     }
 
-    setIsSubmitting(true);
-
     if (!needsSeat && !needsBoxes) {
       alert("Please select passenger, package, or both.");
       return;
     }
 
     const dateFrom = formData.dateFrom || getTodayDate();
-
     const dateTo = formData.dateTo || dateFrom;
 
     if (dateFrom > dateTo) {
       alert("Date From cannot be after Date To.");
       return;
     }
+
+    setIsSubmitting(true);
 
     const needData = {
       ...formData,
@@ -95,6 +100,10 @@ function CreateNeed() {
 
       const createdNeed = await response.json();
 
+      if (!response.ok) {
+        throw new Error(createdNeed.message || "Could not create need");
+      }
+
       console.log("Need created:", createdNeed);
 
       // 2. Find matching trips for this Need
@@ -102,10 +111,34 @@ function CreateNeed() {
         `${apiConfig.baseUrl}/api/matches/need/${createdNeed._id}`,
       );
 
+      if (!matchesResponse.ok) {
+        throw new Error(
+          "Need created, but matching trips could not be loaded.",
+        );
+      }
+
       const matchesData = await matchesResponse.json();
 
-      // 3. Save matches in React state
+      // 3. Preserve current matching behaviour
       setMatches(matchesData);
+
+      // 4. Reset form
+      setFormData({
+        from: "",
+        to: "",
+        dateFrom: "",
+        dateTo: "",
+        fromRadiusKm: 0,
+        requiredSeats: 0,
+        requiredBoxes: 0,
+        description: "",
+      });
+
+      setNeedsSeat(false);
+      setNeedsBoxes(false);
+
+      // 5. Go to My Requests
+      navigate("/needs");
     } catch (error) {
       console.error("Error creating need or loading matches:", error);
     } finally {
@@ -114,154 +147,237 @@ function CreateNeed() {
   }
 
   return (
-    <div>
-      <h1>Find Transport</h1>
+    <div
+      className="create-need-page"
+      style={{
+        backgroundImage: `
+        linear-gradient(
+          rgba(5, 14, 34, 0.1),
+          rgba(5, 14, 34, 0.4)
+        ),
+        url(${createNeedPhoto})
+      `,
+      }}
+    >
+      <div className="create-need-page__header">
+        <span className="create-need-page__eyebrow">FIND YOUR WAY</span>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>From:</label>
+        <h1>Find Transport</h1>
 
-          <input
-            type="text"
-            name="from"
-            value={formData.from}
-            onChange={handleChange}
-          />
-        </div>
+        <p>Tell us where you need to go and what you need to transport.</p>
+      </div>
 
-        <div>
-          <label>Search Radius from Start Location (km):</label>
+      <form className="create-need-form" onSubmit={handleSubmit}>
+        <div className="create-need-form__section">
+          <div className="create-need-form__section-header">
+            <span>01</span>
 
-          <input
-            type="number"
-            name="fromRadiusKm"
-            min="0"
-            value={formData.fromRadiusKm}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div>
-          <label>To:</label>
-
-          <input
-            type="text"
-            name="to"
-            value={formData.to}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div>
-          <label>Date From:</label>
-
-          <input
-            type="date"
-            name="dateFrom"
-            value={formData.dateFrom}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div>
-          <label>Date To:</label>
-
-          <input
-            type="date"
-            name="dateTo"
-            value={formData.dateTo}
-            onChange={handleChange}
-          />
-        </div>
-
-        <hr />
-
-        <div>
-          <label>
-            <input
-              type="checkbox"
-              checked={needsSeat}
-              onChange={(event) => setNeedsSeat(event.target.checked)}
-            />
-            I need a seat
-          </label>
-        </div>
-
-        {needsSeat && (
-          <div>
-            <label>Required Seats:</label>
-
-            <input
-              type="number"
-              name="requiredSeats"
-              min="1"
-              value={formData.requiredSeats}
-              onChange={handleChange}
-            />
-          </div>
-        )}
-
-        <div>
-          <label>
-            <input
-              type="checkbox"
-              checked={needsBoxes}
-              onChange={(event) => setNeedsBoxes(event.target.checked)}
-            />
-            I want to transport packages
-          </label>
-        </div>
-
-        {needsBoxes && (
-          <div>
-            <label>Required Boxes:</label>
-
-            <input
-              type="number"
-              name="requiredBoxes"
-              min="1"
-              value={formData.requiredBoxes}
-              onChange={handleChange}
-            />
-          </div>
-        )}
-
-        <div>
-          <label>Description:</label>
-
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-          />
-        </div>
-
-        <LoadingButton
-          type="submit"
-          loading={isSubmitting}
-          loadingText="Finding Trips..."
-        >
-          Find Transport
-        </LoadingButton>
-      </form>
-
-      <hr />
-
-      <section>
-        <h2>Matching Trips</h2>
-
-        {matches.length === 0 ? (
-          <p>No matching trips found.</p>
-        ) : (
-          matches.map((trip) => (
-            <div key={trip._id}>
-              <Link to={`/trips/${trip._id}`}>
-                {trip.from} → {trip.to} | {trip.date}
-              </Link>
+            <div>
+              <h2>Route</h2>
+              <p>Where should the trip start and end?</p>
             </div>
-          ))
-        )}
-      </section>
+          </div>
+
+          <div className="create-need-form__grid">
+            <div className="create-need-field">
+              <label>From</label>
+
+              <input
+                type="text"
+                name="from"
+                value={formData.from}
+                onChange={handleChange}
+                placeholder="e.g. Kassel"
+                required
+              />
+            </div>
+
+            <div className="create-need-field">
+              <label>To</label>
+
+              <input
+                type="text"
+                name="to"
+                value={formData.to}
+                onChange={handleChange}
+                placeholder="e.g. Berlin"
+                required
+              />
+            </div>
+
+            <div className="create-need-field create-need-field--full">
+              <label>Search Radius from Start Location (km)</label>
+
+              <input
+                type="number"
+                name="fromRadiusKm"
+                min="0"
+                value={formData.fromRadiusKm}
+                onChange={handleChange}
+              />
+
+              <small>
+                0 km means the trip should start from the same location.
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <div className="create-need-form__section">
+          <div className="create-need-form__section-header">
+            <span>02</span>
+
+            <div>
+              <h2>Date Range</h2>
+              <p>Choose when you are available to travel.</p>
+            </div>
+          </div>
+
+          <div className="create-need-form__grid">
+            <div className="create-need-field">
+              <label>Date From</label>
+
+              <input
+                type="date"
+                name="dateFrom"
+                min={getTodayDate()}
+                value={formData.dateFrom}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="create-need-field">
+              <label>Date To</label>
+
+              <input
+                type="date"
+                name="dateTo"
+                min={formData.dateFrom || getTodayDate()}
+                value={formData.dateTo}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="create-need-form__section">
+          <div className="create-need-form__section-header">
+            <span>03</span>
+
+            <div>
+              <h2>What do you need?</h2>
+
+              <p>Passenger transport, packages, or both.</p>
+            </div>
+          </div>
+
+          <div className="create-need-options">
+            <label
+              className={
+                needsSeat
+                  ? "create-need-option create-need-option--active"
+                  : "create-need-option"
+              }
+            >
+              <input
+                type="checkbox"
+                checked={needsSeat}
+                onChange={(event) => setNeedsSeat(event.target.checked)}
+              />
+
+              <div>
+                <strong>Passenger</strong>
+                <span>I need one or more seats</span>
+              </div>
+            </label>
+
+            <label
+              className={
+                needsBoxes
+                  ? "create-need-option create-need-option--active"
+                  : "create-need-option"
+              }
+            >
+              <input
+                type="checkbox"
+                checked={needsBoxes}
+                onChange={(event) => setNeedsBoxes(event.target.checked)}
+              />
+
+              <div>
+                <strong>Package</strong>
+                <span>I want to transport boxes</span>
+              </div>
+            </label>
+          </div>
+
+          {(needsSeat || needsBoxes) && (
+            <div className="create-need-form__grid create-need-requirements">
+              {needsSeat && (
+                <div className="create-need-field">
+                  <label>Required Seats</label>
+
+                  <input
+                    type="number"
+                    name="requiredSeats"
+                    min="1"
+                    value={formData.requiredSeats}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              )}
+
+              {needsBoxes && (
+                <div className="create-need-field">
+                  <label>Required Boxes</label>
+
+                  <input
+                    type="number"
+                    name="requiredBoxes"
+                    min="1"
+                    value={formData.requiredBoxes}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="create-need-form__section">
+          <div className="create-need-form__section-header">
+            <span>04</span>
+
+            <div>
+              <h2>Additional Information</h2>
+              <p>Add anything the driver should know.</p>
+            </div>
+          </div>
+
+          <div className="create-need-field">
+            <label>Description</label>
+
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Additional information..."
+            />
+          </div>
+        </div>
+
+        <div className="create-need-form__actions">
+          <LoadingButton
+            type="submit"
+            loading={isSubmitting}
+            loadingText="Finding Trips..."
+          >
+            Find Transport
+          </LoadingButton>
+        </div>
+      </form>
     </div>
   );
 }

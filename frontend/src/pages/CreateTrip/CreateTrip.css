@@ -57,14 +57,13 @@
   background:
     linear-gradient(
       145deg,
-      rgba(9, 22, 49, 0.94),
-      rgba(6, 16, 36, 0.92)
+      rgba(9, 22, 49, 0.8),
+      rgba(6, 16, 36, 0.9)
     );
 
   box-shadow:
     0 24px 55px rgba(0, 0, 0, 0.28);
 
-  backdrop-filter: blur(10px);
 }
 
 /* SECTIONS */
