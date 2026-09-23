@@ -8,6 +8,9 @@ import "./Needs.css";
 
 function Needs() {
   const [needs, setNeeds] = useState([]);
+  const sortedNeeds = [...needs].sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+  );
 
   const [expandedNeedId, setExpandedNeedId] = useState(null);
 
@@ -157,11 +160,9 @@ function Needs() {
       {needs.length === 0 ? (
         <div className="home-empty">
           <p>You have no requests yet.</p>
-
-          <Link to="/needs/new">Find transport</Link>
         </div>
       ) : (
-        needs.map((need) => {
+        sortedNeeds.map((need) => {
           const isExpanded = expandedNeedId === need._id;
 
           const matches = matchesByNeed[need._id] || [];

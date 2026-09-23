@@ -352,6 +352,49 @@
   }
 }
 
+.home-stat-card .home-rating-display {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  margin-top: 8px;
+}
+
+.home-stat-card .home-rating-stars {
+  display: inline-block;
+
+  color: #ffd35a;
+
+  font-size: 24px;
+  line-height: 1;
+
+  letter-spacing: 2px;
+
+  text-transform: none;
+}
+
+.home-stat-card .home-rating-count {
+  display: inline-block;
+
+  color: #a9b4ca;
+
+  font-size: 25px;
+
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.home-stat-card .home-rating-empty {
+  display: inline-block;
+
+  color: #8895ae;
+
+  font-size: 13px;
+
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 @media (max-width: 700px) {
   .home-page {
     padding: 14px;

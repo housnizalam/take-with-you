@@ -377,8 +377,9 @@ function TripDetails() {
             />
           </div>
 
-          <div>
+          <div className="trip-edit-field">
             <label>Description:</label>
+
             <textarea
               name="description"
               value={editData.description}
@@ -513,22 +514,28 @@ function TripDetails() {
             ) : conversations.length === 0 ? (
               <p>No messages for this trip yet.</p>
             ) : (
-              conversations.map((conversation) => (
-                <ChatBox
-                  key={conversation.conversationId}
-                  tripId={trip._id}
-                  conversationId={conversation.conversationId}
-                  currentUser={currentUser}
-                  otherUser={{
-                    id: conversation.otherUserId,
-                    name: conversation.otherUserName,
-                  }}
-                  liveMessage={liveMessage}
-                  liveTripCompletion={liveTripCompletion}
-                  clientUserId={conversation.otherUserId}
-                  driverUserId={currentUser.id}
-                />
-              ))
+              <div className="trip-conversations-list">
+                {conversations.map((conversation) => (
+                  <div
+                    key={conversation.conversationId}
+                    className="trip-conversation-wrapper"
+                  >
+                    <ChatBox
+                      tripId={trip._id}
+                      conversationId={conversation.conversationId}
+                      currentUser={currentUser}
+                      otherUser={{
+                        id: conversation.otherUserId,
+                        name: conversation.otherUserName,
+                      }}
+                      liveMessage={liveMessage}
+                      liveTripCompletion={liveTripCompletion}
+                      clientUserId={conversation.otherUserId}
+                      driverUserId={currentUser.id}
+                    />
+                  </div>
+                ))}
+              </div>
             )}
           </section>
 

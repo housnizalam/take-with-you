@@ -10,6 +10,12 @@ import "./Trips.css";
 function Trips() {
   const [trips, setTrips] = useState([]);
 
+  const sortedTrips = [...trips].sort(
+  (a, b) =>
+    new Date(b.createdAt) -
+    new Date(a.createdAt),
+);
+
   const currentUser = getCurrentUser();
 
   useEffect(() => {
@@ -58,7 +64,7 @@ function Trips() {
       </div>
 
       <div className="trips-grid">
-        {trips.map((trip) => {
+        {sortedTrips.map((trip) => {
           const image =
             trip.carImages?.length > 0
               ? `${apiConfig.baseUrl}${trip.carImages[0]}`

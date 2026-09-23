@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import apiConfig from "../../config/apiConfig.js";
 import LoadingButton from "../../components/LoadingButton.jsx";
@@ -48,8 +48,6 @@ function CreateNeed() {
       [name]: value,
     });
   }
-  const navigate = useNavigate();
-
   async function handleSubmit(event) {
     event.preventDefault();
 
@@ -121,24 +119,6 @@ function CreateNeed() {
 
       // 3. Preserve current matching behaviour
       setMatches(matchesData);
-
-      // 4. Reset form
-      setFormData({
-        from: "",
-        to: "",
-        dateFrom: "",
-        dateTo: "",
-        fromRadiusKm: 0,
-        requiredSeats: 0,
-        requiredBoxes: 0,
-        description: "",
-      });
-
-      setNeedsSeat(false);
-      setNeedsBoxes(false);
-
-      // 5. Go to My Requests
-      navigate("/needs");
     } catch (error) {
       console.error("Error creating need or loading matches:", error);
     } finally {
@@ -378,6 +358,69 @@ function CreateNeed() {
           </LoadingButton>
         </div>
       </form>
+      <section className="create-need-matches">
+        <div className="create-need-matches__header">
+          <span>MATCHING RESULTS</span>
+          <h2>Matching Trips</h2>
+        </div>
+
+        {matches.length === 0 ? (
+          <div className="create-need-matches__empty">
+            No matching trips found.
+          </div>
+        ) : (
+          <div className="create-need-matches__list">
+            {matches.map((trip) => {
+              const hasCarImage = trip.carImages?.length > 0;
+
+              return (
+                <Link
+                  key={trip._id}
+                  to={`/trips/${trip._id}`}
+                  className="create-need-match-card"
+                >
+                  <div className="create-need-match-card__media">
+                    {hasCarImage ? (
+                      <img
+                        src={`${apiConfig.baseUrl}${trip.carImages[0]}`}
+                        alt={`${trip.carType || "Car"} photo`}
+                      />
+                    ) : (
+                      <div className="create-need-match-card__no-photo">
+                        <strong>No car photo</strong>
+
+                        <span>Driver did not upload a car photo</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="create-need-match-card__content">
+                    <strong className="create-need-match-card__route">
+                      {trip.from} → {trip.to}
+                    </strong>
+
+                    <div className="create-need-match-card__date">
+                      {trip.date}
+                    </div>
+
+                    <div className="create-need-match-card__meta">
+                      <span>{trip.availableSeats} seats</span>
+
+                      <span>{trip.availableBoxes} boxes</span>
+                    </div>
+
+                    {trip.carType && (
+                      <div className="create-need-match-card__car">
+                        {trip.carType}
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
