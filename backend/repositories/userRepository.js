@@ -1,4 +1,5 @@
 import { getDatabase } from "../database/couchdb.js";
+import queryLimits from "../config/queryLimits.js";
 
 async function createUser(userData) {
   const db = await getDatabase();
@@ -33,7 +34,7 @@ async function getAllUsers() {
     selector: {
       type: "user",
     },
-    limit: 1000,
+    limit: queryLimits.users,
   });
 
   return result.docs;
@@ -57,9 +58,4 @@ async function getUserByEmail(email) {
   return result.docs[0];
 }
 
-export {
-  createUser,
-  getUserById,
-  getAllUsers,
-  getUserByEmail,
-};
+export { createUser, getUserById, getAllUsers, getUserByEmail };

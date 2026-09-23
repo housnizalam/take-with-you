@@ -1,4 +1,5 @@
 import { getDatabase } from "../database/couchdb.js";
+import queryLimits from "../config/queryLimits.js";
 
 async function createRating(ratingData) {
   const db = await getDatabase();
@@ -58,7 +59,7 @@ async function getRatingsForUser(userId) {
       type: "rating",
       toUserId: userId,
     },
-    limit: 1000,
+limit: queryLimits.ratingsPerUser,
   });
 
   return result.docs;

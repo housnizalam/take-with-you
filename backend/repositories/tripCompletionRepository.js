@@ -1,6 +1,5 @@
-
-
 import { getDatabase } from "../database/couchdb.js";
+import queryLimits from "../config/queryLimits.js";
 
 async function createTripCompletion(completionData) {
   const db = await getDatabase();
@@ -30,9 +29,7 @@ async function createTripCompletion(completionData) {
   };
 }
 
-async function getTripCompletionByConversationId(
-  conversationId,
-) {
+async function getTripCompletionByConversationId(conversationId) {
   const db = await getDatabase();
 
   const result = await db.find({
@@ -50,16 +47,10 @@ async function getTripCompletionByConversationId(
   return result.docs[0];
 }
 
-async function confirmTripCompletion(
-  conversationId,
-  userId,
-) {
+async function confirmTripCompletion(conversationId, userId) {
   const db = await getDatabase();
 
-  const completion =
-    await getTripCompletionByConversationId(
-      conversationId,
-    );
+  const completion = await getTripCompletionByConversationId(conversationId);
 
   if (!completion) {
     throw new Error("Trip completion not found");
@@ -70,15 +61,10 @@ async function confirmTripCompletion(
   } else if (userId === completion.driverUserId) {
     completion.driverConfirmed = true;
   } else {
-    throw new Error(
-      "User is not part of this trip completion",
-    );
+    throw new Error("User is not part of this trip completion");
   }
 
-  if (
-    completion.clientConfirmed &&
-    completion.driverConfirmed
-  ) {
+  if (completion.clientConfirmed && completion.driverConfirmed) {
     completion.completedAt = Date.now();
   }
 
@@ -98,14 +84,11 @@ async function deleteTripCompletionsByTripId(tripId) {
       type: "trip_completion",
       tripId,
     },
-    limit: 1000,
+    limit: queryLimits.tripCompletions,
   });
 
   for (const completion of result.docs) {
-    await db.destroy(
-      completion._id,
-      completion._rev,
-    );
+    await db.destroy(completion._id, completion._rev);
   }
 
   return result.docs.length;

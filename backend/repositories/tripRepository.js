@@ -1,4 +1,5 @@
 import { getDatabase } from "../database/couchdb.js";
+import queryLimits from "../config/queryLimits.js";
 
 async function createTrip(tripData) {
   const db = await getDatabase();
@@ -25,7 +26,7 @@ async function getAllTrips() {
     selector: {
       type: "trip",
     },
-    limit: 1000,
+    limit: queryLimits.trips,
   });
 
   return result.docs;
@@ -91,22 +92,32 @@ async function getTripsByDateRange(dateFrom, dateTo) {
 async function deleteExpiredTrips(cutoffDate) {
   const db = await getDatabase();
 
-  const result = await db.find({
-    selector: {
-      type: "trip",
-      date: {
-        $lte: cutoffDate,
-      },
-    },
-    limit: 1000,
-  });
-
   const deletedTripIds = [];
 
-  for (const trip of result.docs) {
-    await db.destroy(trip._id, trip._rev);
+  while (true) {
+    const result = await db.find({
+      selector: {
+        type: "trip",
+        date: {
+          $lte: cutoffDate,
+        },
+      },
+      limit: queryLimits.cleanupTrips,
+    });
 
-    deletedTripIds.push(trip._id);
+    if (result.docs.length === 0) {
+      break;
+    }
+
+    for (const trip of result.docs) {
+      await db.destroy(trip._id, trip._rev);
+
+      deletedTripIds.push(trip._id);
+    }
+
+    if (result.docs.length < queryLimits.cleanupTrips) {
+      break;
+    }
   }
 
   return deletedTripIds;

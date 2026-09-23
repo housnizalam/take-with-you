@@ -1,4 +1,5 @@
 import { getDatabase } from "../database/couchdb.js";
+import queryLimits from "../config/queryLimits.js";
 
 async function createNeed(needData) {
   const db = await getDatabase();
@@ -25,7 +26,7 @@ async function getAllNeeds() {
     selector: {
       type: "need",
     },
-    limit: 1000,
+    limit: queryLimits.needs,
   });
 
   return result.docs;
@@ -73,21 +74,35 @@ async function deleteNeed(id) {
 async function deleteExpiredNeeds(cutoffDate) {
   const db = await getDatabase();
 
-  const result = await db.find({
-    selector: {
-      type: "need",
-      dateTo: {
-        $lte: cutoffDate,
-      },
-    },
-    limit: 1000,
-  });
+  let deletedCount = 0;
 
-  for (const need of result.docs) {
-    await db.destroy(need._id, need._rev);
+  while (true) {
+    const result = await db.find({
+      selector: {
+        type: "need",
+        dateTo: {
+          $lte: cutoffDate,
+        },
+      },
+      limit: queryLimits.cleanupNeeds,
+    });
+
+    if (result.docs.length === 0) {
+      break;
+    }
+
+    for (const need of result.docs) {
+      await db.destroy(need._id, need._rev);
+
+      deletedCount++;
+    }
+
+    if (result.docs.length < queryLimits.cleanupNeeds) {
+      break;
+    }
   }
 
-  return result.docs.length;
+  return deletedCount;
 }
 
 export {

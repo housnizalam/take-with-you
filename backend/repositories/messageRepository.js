@@ -1,4 +1,5 @@
 import { getDatabase } from "../database/couchdb.js";
+import queryLimits from "../config/queryLimits.js";
 
 async function createMessage(messageData) {
   const db = await getDatabase();
@@ -26,12 +27,10 @@ async function getMessagesByConversationId(conversationId) {
       type: "message",
       conversationId,
     },
-    limit: 1000,
+    limit: queryLimits.messagesPerConversation,
   });
 
-  return result.docs.sort(
-    (a, b) => a.createdAt - b.createdAt,
-  );
+  return result.docs.sort((a, b) => a.createdAt - b.createdAt);
 }
 
 async function getMessagesByTripId(tripId) {
@@ -42,7 +41,7 @@ async function getMessagesByTripId(tripId) {
       type: "message",
       tripId,
     },
-    limit: 1000,
+    limit: queryLimits.messagesPerTrip,
   });
 
   return result.docs;
@@ -56,14 +55,11 @@ async function deleteMessagesByTripId(tripId) {
       type: "message",
       tripId,
     },
-    limit: 1000,
+    limit: queryLimits.messagesPerTrip,
   });
 
   for (const message of result.docs) {
-    await db.destroy(
-      message._id,
-      message._rev,
-    );
+    await db.destroy(message._id, message._rev);
   }
 
   return result.docs.length;
