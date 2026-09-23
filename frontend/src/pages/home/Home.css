@@ -408,11 +408,22 @@
     padding: 30px;
   }
 
-  .home-actions {
-    grid-template-columns: 1fr;
-  }
+.home-actions {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
 
-  .home-stats {
-    grid-template-columns: 1fr;
-  }
+.home-action-card {
+  min-height: 120px;
+  padding: 16px;
+}
+
+.home-stats {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.home-stat-card:nth-child(3) {
+  grid-column: 1 / -1;
+}
 }
