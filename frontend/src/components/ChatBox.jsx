@@ -389,34 +389,32 @@ function ChatBox({
         </button>
       </form>
 
-<div className="chat-box__completion">
-  <p className="chat-box__completion-note">
-    Use this only when the trip has actually finished.
-  </p>
+      <div className="chat-box__completion">
+        <p className="chat-box__completion-note">
+          Use this only when the trip has actually finished.
+        </p>
 
-  <button
-    type="button"
-    className={
-      tripFullyCompleted
-        ? "chat-complete-button chat-complete-button--done"
-        : "chat-complete-button"
-    }
-    onClick={handleTripComplete}
-    disabled={
-      isConfirmingTrip ||
-      currentUserConfirmed ||
-      tripFullyCompleted
-    }
-  >
-    {tripFullyCompleted
-      ? "Trip Completed"
-      : currentUserConfirmed
-        ? "Waiting for other user..."
-        : isConfirmingTrip
-          ? "Confirming..."
-          : "Trip Complete"}
-  </button>
-</div>
+        <button
+          type="button"
+          className={
+            tripFullyCompleted
+              ? "chat-complete-button chat-complete-button--done"
+              : "chat-complete-button"
+          }
+          onClick={handleTripComplete}
+          disabled={
+            isConfirmingTrip || currentUserConfirmed || tripFullyCompleted
+          }
+        >
+          {tripFullyCompleted
+            ? "Trip Completed"
+            : currentUserConfirmed
+              ? "Waiting for other user..."
+              : isConfirmingTrip
+                ? "Confirming..."
+                : "Trip Complete"}
+        </button>
+      </div>
 
       {tripFullyCompleted && !existingRating && (
         <div className="chat-rating">

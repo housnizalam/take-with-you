@@ -27,9 +27,9 @@ const PORT = 3000;
 
 app.use(express.json());
 
-app.use("/api/matches", matchRoutes);
-
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
+app.use("/api/matches", matchRoutes);
 
 app.use("/api/messages", messageRoutes);
 

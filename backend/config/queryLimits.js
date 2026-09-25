@@ -17,7 +17,7 @@ const queryLimits = {
   messagesPerTrip: 500,
 
   // Usually one completion document per conversation
-  tripCompletions: 10000,
+  tripCompletions: 100,
 
   // User reputation should preserve a large history
   ratingsPerUser: 10000,
