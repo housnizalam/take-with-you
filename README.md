@@ -1,67 +1,205 @@
 # Take With You
 
-A full-stack web application connecting trips and requests for items or assistance, with matching and communication features. The repository contains a React frontend and a Node.js/Express backend backed by CouchDB.
+**A full-stack platform for connecting people who travel with people who need items delivered.**
 
-## Features represented in the codebase
+Built as a portfolio project with a **React** frontend, a **Node.js / Express** API, **CouchDB** persistence, and **WebSocket** messaging.
 
-- User registration/authentication endpoints.
-- Trips and needs/requests management.
-- Matching endpoints connecting trips with needs.
-- Messaging endpoints and a WebSocket chat server.
-- Trip-completion and rating endpoints.
-- Upload handling and background cleanup of expired data.
+> **Project status:** This repository documents a development-stage application. Its route structure and core implementation have been reviewed, but the application has not been end-to-end tested or independently deployed as part of this documentation work.
 
-> Features are listed from the inspected routes and server structure; deployment readiness and end-to-end behavior have not yet been verified.
+## Overview
 
-## Technology
+Take With You brings together two types of activity:
 
-| Layer | Technologies |
+- **Trips:** A user can publish an upcoming trip.
+- **Needs:** Another user can publish a request for an item or assistance.
+
+The backend provides routes and services for finding potential matches, communicating, and recording trip completion and ratings. The application is an example of a multi-layer full-stack system rather than a static UI demo.
+
+## Main capabilities
+
+| Area | Implemented code / modules |
 | --- | --- |
-| Frontend | React, React Router, Vite, CSS |
-| Backend | Node.js, Express |
-| Database | CouchDB, accessed using `nano` |
-| Real-time communication | WebSocket (`ws`) |
-| Other backend packages | `bcryptjs`, `cors`, `formidable` |
+| Accounts | Registration and login with hashed passwords (`bcryptjs`) |
+| Trip management | Trip routes, database access, and React pages |
+| Needs and requests | Need routes, repositories, and create/list pages |
+| Matching | Matching routes, matching service, and distance/geocoding services |
+| Communication | Message routes, conversation service, and WebSocket chat server |
+| Follow-up | Trip completion and rating routes |
+| Maintenance | CouchDB indexes and scheduled cleanup of expired data |
 
-## Repository layout
+The presence of a route does not imply that every user flow has been independently verified.
+
+## Technology stack
+
+| Component | Technology |
+| --- | --- |
+| Frontend | React 19, React Router 7, Vite 8, CSS |
+| Backend | Node.js (ES modules), Express 5 |
+| Database | Apache CouchDB, `nano` client |
+| Real-time chat | WebSockets (`ws`) |
+| Authentication utilities | `bcryptjs` |
+| File upload handling | `formidable` |
+| Cross-origin requests | `cors` |
+
+## Architecture
 
 ```text
-frontend/
-  src/             React UI, pages, components and services
-  package.json     Frontend scripts and dependencies
-backend/
-  server.js        Express application and HTTP/WebSocket server
-  routes/          API routes for users, trips, needs, matches, messages, ratings, etc.
-  services/        Backend services and cleanup tasks
-  repositories/    Data-access related modules
-  database/        CouchDB setup and indexes
-  config/          Backend configuration
-  websocket/       Chat server
-  uploads/         Uploaded content
-package.json       Root/backend dependencies
+                 React frontend (Vite)
+                          |
+                  HTTP requests / WebSocket
+                          |
+                 Node.js + Express API
+                   /             \
+             Route handlers    WebSocket chat
+                   |
+               Services
+                   |
+              Repositories
+                   |
+                 CouchDB
 ```
 
-## Local development (current code structure)
+### Repository structure
 
-1. Install Node.js and CouchDB.
-2. Clone the repository and install root dependencies with `npm install`.
-3. Install frontend dependencies with `cd frontend && npm install`.
-4. Configure CouchDB for local development. **Do not reuse the credentials currently committed in `backend/config/databaseConfig.js`.** Move database credentials into environment variables and rotate the exposed password before publishing or deploying.
-5. Start the backend from the repository root with `node backend/server.js`. The source currently listens on port `3000`.
-6. In another terminal, run `cd frontend && npm run dev`. Vite's default development URL is typically `http://localhost:5173`; the backend currently allows this origin.
+```text
+take-with-you/
+├── backend/
+│   ├── config/          # Database and query configuration
+│   ├── database/        # CouchDB access and index creation
+│   ├── repositories/    # Persistence operations
+│   ├── routes/          # Express API endpoints
+│   ├── services/        # Matching, geocoding, cleanup, conversations
+│   ├── websocket/       # WebSocket chat server
+│   ├── uploads/         # Upload-related content
+│   └── server.js        # API / HTTP server entry point
+├── frontend/
+│   ├── src/
+│   │   ├── auth/
+│   │   ├── components/
+│   │   ├── layouts/
+│   │   ├── pages/
+│   │   └── services/
+│   └── package.json
+├── .env.example         # Non-secret local configuration template
+├── .gitignore
+├── package.json         # Backend dependencies
+└── README.md
+```
 
-The database is initialized, indexes are created and expired-data cleanup runs as part of backend startup.
+## Run locally
 
-> **Not yet verified:** These steps are based on the committed configuration and scripts; the full application has not been run or tested in this review. Check file-upload paths and environment-specific settings before relying on the setup.
+### Prerequisites
 
-## Current repository limitations / security checklist
+- A recent Node.js version compatible with the React/Vite toolchain (Node.js 24 is one option).
+- npm.
+- Apache CouchDB running locally, with an administrative user able to create the application database.
+- A modern browser.
 
-- **Credential exposure:** `backend/config/databaseConfig.js` currently contains a hard-coded CouchDB username and password. Rotate credentials, remove them from source, and review Git history before changing repository visibility.
-- **Dependencies:** A root `node_modules/` directory is committed. Remove generated dependencies from version control and add an appropriate root `.gitignore` in a separate cleanup change.
-- The frontend has a template README, while this root README documents the whole application.
-- Review CORS settings, authentication, authorization, validation, uploads, and WebSocket access before public deployment.
-- Add screenshots, architecture diagrams, tested installation steps, and automated tests.
+### 1. Clone and install dependencies
 
-## Portfolio focus
+```bash
+git clone https://github.com/housnizalam/take-with-you.git
+cd take-with-you
+npm install
+cd frontend
+npm install
+cd ..
+```
 
-This project demonstrates integration of a React client, an Express API, CouchDB persistence and real-time communication into one full-stack application.
+### 2. Configure CouchDB without committing credentials
+
+Create your local environment file from the example:
+
+```bash
+cp .env.example .env
+```
+
+On Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Edit `.env` to use **your own newly created CouchDB credentials**. Never paste credentials into source files or commit `.env` to Git.
+
+| Variable | Purpose |
+| --- | --- |
+| `COUCHDB_PROTOCOL` | Usually `http` for local development |
+| `COUCHDB_HOST` | CouchDB hostname (default `127.0.0.1`) |
+| `COUCHDB_PORT` | CouchDB port (default `5984`) |
+| `COUCHDB_USERNAME` | Required database username |
+| `COUCHDB_PASSWORD` | Required database password |
+| `COUCHDB_DATABASE` | Application database (default `take_with_you`) |
+
+`backend/config/databaseConfig.js` now reads credentials from **environment variables** and fails clearly if required values are missing.
+
+### 3. Start the backend
+
+With **Node.js 20.6+**, use the built-in environment-file flag from the repository root:
+
+```bash
+node --env-file=.env backend/server.js
+```
+
+The backend currently listens on **http://localhost:3000**, with a test endpoint at **http://localhost:3000/api**. At startup it connects to CouchDB, creates indexes, runs cleanup, and initializes chat.
+
+### 4. Start the frontend
+
+Open a second terminal:
+
+```bash
+cd frontend
+npm run dev
+```
+
+Open the URL printed by Vite (typically **http://localhost:5173**). The backend currently allows that local frontend origin in its CORS configuration.
+
+**Note:** Commands above are based on current source and package scripts. They have not been fully smoke-tested in a clean environment. File-upload paths, frontend configuration, and platform-specific behavior may require further setup.
+
+## Selected API areas
+
+The backend mounts:
+
+- `/api/auth` — registration and login
+- `/api/users` — user operations
+- `/api/trips` — trips
+- `/api/needs` — requests
+- `/api/matches` — matching
+- `/api/messages` — messages
+- `/api/trip-completions` — trip completion
+- `/api/ratings` — ratings
+
+See `backend/routes/` for the actual methods, payload formats, and validation.
+
+## Security and deployment status
+
+**Do not deploy this repository as-is without a security review.**
+
+- **Database credentials:** The current `databaseConfig.js` reads values from the environment; the local `.env` file is Git-ignored. **However, an earlier commit contained a CouchDB password. Changing the current file does not remove it from Git history.** Rotate/revoke the old database password, and clean the repository history before making the repository public. Anyone who has already accessed that history may have copied it.
+- **Tracked dependencies:** `node_modules/` was previously committed. The new `.gitignore` prevents adding untracked dependencies going forward, but does **not** untrack files already committed. Remove tracked dependencies in a separate cleanup commit.
+- Review authentication, authorization, user-provided content, file uploads, WebSocket access, CORS, and rate limiting before production deployment.
+- Use TLS, separate production credentials, least-privilege database accounts, backups, and centralized configuration in production.
+
+## Portfolio highlights
+
+This project illustrates:
+
+- Building a component-based React interface.
+- Separating Express routes, services, repositories, and database access.
+- Working with a document database (CouchDB).
+- Adding WebSocket-based real-time communication.
+- Integrating a frontend with an API and persistence.
+- Improving configuration hygiene by separating local secrets from source code.
+
+## Next improvements
+
+- Add genuine screenshots or a short demo video (without exposing user data).
+- Test installation from a clean clone and provide an automated smoke test.
+- Add API documentation and integration tests.
+- Clean tracked build/dependency artifacts.
+- Complete the security checklist and production configuration.
+
+---
+
+**Author:** [Housni Zalam](https://github.com/housnizalam)  
+**Purpose:** Software engineering / full-stack development portfolio project.
