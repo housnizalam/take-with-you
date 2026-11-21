@@ -1,0 +1,21 @@
+# Local credentials and environment overrides
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Installed dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs and local caches
+dist/
+**/dist/
+coverage/
+*.log
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
