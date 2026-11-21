@@ -29,6 +29,46 @@ The backend provides routes and services for finding potential matches, communic
 
 The presence of a route does not imply that every user flow has been independently verified.
 
+## Screenshots
+
+The following screenshots showcase the core user journey, from managing trips and transport requests to matching and real-time communication.
+
+### 1. Dashboard
+
+A central overview with navigation, quick actions, upcoming trips, recent requests, and user ratings.
+
+![Take With You — Dashboard](screenshots/01-dashboard.webp)
+
+### 2. Create a trip
+
+Drivers can enter departure and destination, journey date, vehicle information, available seats and package capacity, and optionally add car images.
+
+![Take With You — Create Trip](screenshots/02-create-trip.webp)
+
+### 3. My trips
+
+A personal overview of published journeys, including route, date, available seats, packages, and vehicle photos.
+
+![Take With You — My Trips](screenshots/03-my-trips.webp)
+
+### 4. Create a transport request
+
+Users can specify their route, an optional departure radius, travel date range, and whether they need passenger seats, package transportation, or both.
+
+![Take With You — Create Request](screenshots/04-create-request.webp)
+
+### 5. Matching trips
+
+Requests display matching journeys with driver/vehicle details and available transport capacity.
+
+![Take With You — Matching Trips](screenshots/05-matching-trips.webp)
+
+### 6. Messaging and trip completion
+
+A conversation interface enables communication between participants; trip details include driver ratings and completion controls.
+
+![Take With You — Chat](screenshots/06-live-chat.webp)
+
 ## Technology stack
 
 | Component | Technology |
